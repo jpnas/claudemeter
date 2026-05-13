@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.assert\\(p.dependencies.express, 'express missing'\\); console.log\\('PASS'\\);\")",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(node *)",
+      "Bash(npm install *)",
+      "Bash(curl -s http://localhost:3333/usage)",
+      "Bash(kill %1)",
+      "Bash(wait)",
+      "Bash(curl -s http://localhost:3333/)",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs kill -9)",
+      "Bash(chmod +x /Users/joaopedronascimento/claude-usage/start.sh)",
+      "Bash(docker build *)",
+      "Bash(docker pull *)",
+      "Bash(docker run *)",
+      "Bash(docker stop claude-usage-test *)",
+      "Bash(curl -sf http://localhost:3333/usage)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -sf http://localhost:3333/)",
+      "Bash(docker stop *)"
+    ]
+  }
+}
