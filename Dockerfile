@@ -7,7 +7,7 @@ COPY server.js ./
 COPY public/ ./public/
 COPY start.sh ./
 
-RUN chmod +x start.sh
+RUN chmod +x start.sh && npm ci --omit=dev
 
 EXPOSE 3333
 
