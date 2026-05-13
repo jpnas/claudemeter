@@ -11,9 +11,11 @@ const POLL_INTERVAL_MS = 30_000;
 
 let cachedUsage = null;
 
-// TODO: confirm exact JSON structure when container is running.
-// Assumed: { claudeAiOauth: { accessToken: "sk-..." } }
+// Token resolution order:
+// 1. OAUTH_TOKEN env var (direct token string — useful on macOS where credentials are in Keychain)
+// 2. CREDENTIALS_PATH file with { claudeAiOauth: { accessToken: "..." } } structure
 function readToken() {
+  if (process.env.OAUTH_TOKEN) return process.env.OAUTH_TOKEN;
   const resolved = CREDENTIALS_PATH.replace(/^~/, os.homedir());
   const raw = fs.readFileSync(resolved, 'utf8');
   const creds = JSON.parse(raw);
