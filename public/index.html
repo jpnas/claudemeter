@@ -217,7 +217,81 @@
   </div>
 
   <script>
-    // JS added in Task 5
+    'use strict';
+
+    let usageData = null;
+
+    function getColor(pct) {
+      if (pct < 50) return '#22c55e';
+      if (pct <= 80) return '#eab308';
+      return '#ef4444';
+    }
+
+    function formatCountdown(isoString) {
+      const diff = new Date(isoString) - Date.now();
+      if (diff <= 0) return 'Resetting...';
+      const totalSec = Math.floor(diff / 1000);
+      const days    = Math.floor(totalSec / 86400);
+      const hours   = Math.floor((totalSec % 86400) / 3600);
+      const mins    = Math.floor((totalSec % 3600) / 60);
+      const secs    = totalSec % 60;
+      if (days  > 0) return `Resets in ${days}d ${hours}h`;
+      if (hours > 0) return `Resets in ${hours}h ${mins}m`;
+      return `Resets in ${mins}m ${secs}s`;
+    }
+
+    function applyBar(fillId, pctId, utilization) {
+      const pct   = Math.round(utilization);
+      const color = getColor(pct);
+      document.getElementById(fillId).style.width      = pct + '%';
+      document.getElementById(fillId).style.background = color;
+      if (pctId) {
+        document.getElementById(pctId).textContent   = pct + '%';
+        document.getElementById(pctId).style.color   = color;
+      }
+    }
+
+    function render(data) {
+      usageData = data;
+
+      applyBar('current-bar', 'current-pct', data.five_hour.utilization);
+      applyBar('weekly-bar',  'weekly-pct',  data.seven_day.utilization);
+
+      const hasOpus   = data.seven_day_opus   !== null;
+      const hasSonnet = data.seven_day_sonnet !== null;
+      const hasAny    = hasOpus || hasSonnet;
+
+      document.getElementById('sub-bars').style.display   = hasAny ? 'flex'  : 'none';
+      document.getElementById('opus-row').style.display   = hasOpus   ? 'flex'  : 'none';
+      document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex'  : 'none';
+
+      if (hasOpus)   applyBar('opus-fill',   'opus-pct',   data.seven_day_opus.utilization);
+      if (hasSonnet) applyBar('sonnet-fill', 'sonnet-pct', data.seven_day_sonnet.utilization);
+
+      tick();
+    }
+
+    function tick() {
+      if (!usageData) return;
+      document.getElementById('current-countdown').textContent =
+        formatCountdown(usageData.five_hour.resets_at);
+      document.getElementById('weekly-countdown').textContent =
+        formatCountdown(usageData.seven_day.resets_at);
+    }
+
+    async function fetchAndRender() {
+      try {
+        const res  = await fetch('/usage');
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        console.error('Failed to fetch /usage:', e);
+      }
+    }
+
+    fetchAndRender();
+    setInterval(fetchAndRender, 30_000);
+    setInterval(tick, 1_000);
   </script>
 </body>
 </html>
