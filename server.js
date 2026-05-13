@@ -72,6 +72,6 @@ app.get('/usage', (_req, res) => {
 poll().then(() => {
   setInterval(poll, POLL_INTERVAL_MS);
   app.listen(PORT, () => {
-    console.log(`Claude Usage Dashboard listening on http://localhost:${PORT}`);
+    console.log(`Claudemeter listening on http://localhost:${PORT}`);
   });
 });

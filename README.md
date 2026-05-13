@@ -1,4 +1,4 @@
-# Claude Usage Dashboard
+# Claudemeter
 
 A lightweight web dashboard that polls the Anthropic Claude Code usage API and displays session and weekly usage on an 800×480 screen.
 
@@ -6,15 +6,15 @@ A lightweight web dashboard that polls the Anthropic Claude Code usage API and d
 
 ```bash
 # Build
-docker build -t claude-usage-dashboard .
+docker build -t claudemeter .
 
 # Run — mount your Claude credentials so the server can read the OAuth token
 docker run -d \
   -p 3333:3333 \
   -v "$HOME/.claude/credentials.json:/root/.claude/credentials.json:ro" \
   -e CREDENTIALS_PATH=/root/.claude/credentials.json \
-  --name claude-usage \
-  claude-usage-dashboard
+  --name claudemeter \
+  claudemeter
 ```
 
 Open `http://localhost:3333` in your browser.

@@ -21,7 +21,24 @@
       "Bash(curl -sf http://localhost:3333/usage)",
       "Bash(python3 -m json.tool)",
       "Bash(curl -sf http://localhost:3333/)",
-      "Bash(docker stop *)"
+      "Bash(docker stop *)",
+      "Bash(git rm *)",
+      "Bash(curl -sf http://localhost:3334/usage)",
+      "Bash(curl -v http://localhost:3334/usage)",
+      "Bash(curl -sf http://localhost:3334/)",
+      "Bash(curl -sf http://localhost:3335/usage)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(security find-generic-password *)",
+      "Bash(security find-internet-password *)",
+      "Bash(security dump-keychain *)",
+      "Bash(python3 -c \"import json,sys; d=json.loads\\(sys.stdin.read\\(\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(docker rm *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/HermannBjorgvin/Clawdmeter/main/assets/Claude%20Code%20Logo.png\" -o /Users/joaopedronascimento/claude-usage/public/logo.png)",
+      "Bash(curl *)",
+      "WebFetch(domain:claudepix.vercel.app)"
     ]
   }
 }

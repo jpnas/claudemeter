@@ -1,5 +1,5 @@
 {
-  "name": "claude-usage-dashboard",
+  "name": "claudemeter",
   "version": "1.0.0",
   "description": "Claude Code usage monitor dashboard",
   "main": "server.js",

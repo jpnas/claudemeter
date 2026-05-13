@@ -1,421 +1,614 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=800, height=480, user-scalable=no">
-  <title>Claude Usage</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=800, height=480, user-scalable=no" />
+    <title>Claudemeter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    html {
-      background: #0f0f0f;
-      min-height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+      html {
+        background: #0f0f0f;
+        min-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    body {
-      background: #0f0f0f;
-      color: #faf9f5;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      width: min(800px, 100%);
-      height: 480px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 28px 12px;
-      gap: 10px;
-      flex-shrink: 0;
-    }
+      body {
+        background: #0f0f0f;
+        color: #faf9f5;
+        font-family: "DM Sans", system-ui, sans-serif;
+        width: min(800px, 100%);
+        height: 480px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 28px 12px;
+        gap: 10px;
+        flex-shrink: 0;
+      }
 
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      height: 60px;
-      gap: 20px;
-    }
+      /* ── Header ── */
+      .header {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        height: 60px;
+        gap: 12px;
+      }
 
-    .logo {
-      display: block;
-      width: 60px;
-      height: 60px;
-      flex-shrink: 0;
-      border: none;
-      background: transparent;
-    }
+      .logo {
+        display: block;
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border: none;
+        background: transparent;
+      }
 
-    .title {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 44px;
-      font-weight: 400;
-      letter-spacing: 0.5px;
-      color: #faf9f5;
-    }
+      .title {
+        font-family: "DM Serif Display", Georgia, serif;
+        font-size: 44px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: #faf9f5;
+      }
 
-    /* ── Cards ── */
-    .cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      /* ── Cards ── */
+      .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-    .card {
-      background: #1f1f1e;
-      border-radius: 8px;
-      padding: 12px 16px 12px;
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      position: relative;
-    }
+      .card {
+        background: #1f1f1e;
+        border-radius: 8px;
+        padding: 12px 16px 12px;
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        position: relative;
+      }
 
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
 
-    /* % label — DM Sans bold (matches font_styrene_48) */
-    .pct {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 52px;
-      font-weight: 700;
-      line-height: 1;
-      color: #faf9f5;
-      min-width: 0;
-      overflow: hidden;
-    }
+      /* % label — DM Sans bold (matches font_styrene_48) */
+      .pct {
+        font-family: "DM Sans", sans-serif;
+        font-size: 52px;
+        font-weight: 700;
+        line-height: 1;
+        color: #faf9f5;
+        min-width: 0;
+        overflow: hidden;
+      }
 
-    /* Pill — background matches bar track (#2a2a28), font_styrene_28 ≈ 20px */
-    .badge {
-      background: #2a2a28;
-      border-radius: 999px;
-      padding: 6px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 20px;
-      font-weight: 500;
-      color: #faf9f5;
-      flex-shrink: 0;
-      margin-top: 4px;
-    }
+      /* Pill — background matches bar track (#2a2a28), font_styrene_28 ≈ 20px */
+      .badge {
+        background: #2a2a28;
+        border-radius: 999px;
+        padding: 6px 18px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 20px;
+        font-weight: 500;
+        color: #faf9f5;
+        flex-shrink: 0;
+        margin-top: 4px;
+      }
 
-    /* ── Progress bars — height 24px matching firmware ── */
-    .progress-track {
-      background: #2a2a28;
-      border-radius: 6px;
-      height: 24px;
-      overflow: hidden;
-      flex-shrink: 0;
-      margin-bottom: 8px;
-    }
+      /* ── Progress bars — height 24px matching firmware ── */
+      .progress-track {
+        background: #2a2a28;
+        border-radius: 6px;
+        height: 24px;
+        overflow: hidden;
+        flex-shrink: 0;
+        margin-bottom: 8px;
+      }
 
-    .progress-fill {
-      height: 100%;
-      border-radius: 6px;
-      width: 0%;
-      transition: width 0.7s ease, background-color 0.7s ease;
-    }
+      .progress-fill {
+        height: 100%;
+        border-radius: 6px;
+        width: 0%;
+        transition:
+          width 0.7s ease,
+          background-color 0.7s ease;
+      }
 
-    /* Resets in — font_styrene_28 ≈ 20px, COL_DIM */
-    .countdown {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: #b0aea5;
-    }
+      /* Resets in — font_styrene_28 ≈ 20px, COL_DIM */
+      .countdown {
+        font-family: "DM Sans", sans-serif;
+        font-size: 20px;
+        font-weight: 400;
+        color: #b0aea5;
+      }
 
-    /* ── Sub-bars (Opus / Sonnet) ── */
-    .sub-bars {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      margin-top: 6px;
-    }
+      /* ── Sub-bars (Opus / Sonnet) ── */
+      .sub-bars {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 6px;
+      }
 
-    .sub-bar-row {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
+      .sub-bar-row {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .sub-bar-label {
-      font-size: 13px;
-      width: 52px;
-      color: #b0aea5;
-      flex-shrink: 0;
-    }
+      .sub-bar-label {
+        font-size: 13px;
+        width: 52px;
+        color: #b0aea5;
+        flex-shrink: 0;
+      }
 
-    .sub-bar-track {
-      background: #2a2a28;
-      border-radius: 4px;
-      height: 10px;
-      flex: 1;
-      overflow: hidden;
-    }
+      .sub-bar-track {
+        background: #2a2a28;
+        border-radius: 4px;
+        height: 10px;
+        flex: 1;
+        overflow: hidden;
+      }
 
-    .sub-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      width: 0%;
-      transition: width 0.7s ease;
-    }
+      .sub-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.7s ease;
+      }
 
-    .sub-bar-pct {
-      font-size: 13px;
-      width: 36px;
-      text-align: right;
-      color: #b0aea5;
-      flex-shrink: 0;
-    }
+      .sub-bar-pct {
+        font-size: 13px;
+        width: 36px;
+        text-align: right;
+        color: #b0aea5;
+        flex-shrink: 0;
+      }
 
-    /* ── Status bar — font_mono_32, COL_ACCENT ── */
-    .status-bar {
-      flex-shrink: 0;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+      /* ── Status bar — font_mono_32, COL_ACCENT ── */
+      .status-bar {
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .status-text {
-      font-family: 'DM Mono', 'Courier New', monospace;
-      color: #d97757;
-      font-size: 16px;
-      font-weight: 400;
-      letter-spacing: 1px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header">
-    <iframe class="logo" id="sprite" src="" title="Claude sprite" scrolling="no"></iframe>
-    <span class="title">Usage</span>
-  </div>
-
-  <div class="cards">
-
-    <div class="card">
-      <div class="card-header">
-        <span class="pct" id="current-pct">--%</span>
-        <span class="badge">Current</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="current-bar"></div>
-      </div>
-      <div class="countdown" id="current-countdown">---</div>
+      .status-text {
+        font-family: "DM Mono", "Courier New", monospace;
+        color: #d97757;
+        font-size: 16px;
+        font-weight: 400;
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <iframe
+        class="logo"
+        id="sprite"
+        src=""
+        title="Claude sprite"
+        scrolling="no"
+      ></iframe>
+      <span class="title">Usage</span>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <span class="pct" id="weekly-pct">--%</span>
-        <span class="badge">Weekly</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="weekly-bar"></div>
-      </div>
-      <div class="countdown" id="weekly-countdown">---</div>
-      <div class="sub-bars" id="sub-bars">
-        <div class="sub-bar-row" id="opus-row">
-          <span class="sub-bar-label">Opus</span>
-          <div class="sub-bar-track">
-            <div class="sub-bar-fill" id="opus-fill"></div>
-          </div>
-          <span class="sub-bar-pct" id="opus-pct"></span>
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="pct" id="current-pct">--%</span>
+          <span class="badge">Current</span>
         </div>
-        <div class="sub-bar-row" id="sonnet-row">
-          <span class="sub-bar-label">Sonnet</span>
-          <div class="sub-bar-track">
-            <div class="sub-bar-fill" id="sonnet-fill"></div>
-          </div>
-          <span class="sub-bar-pct" id="sonnet-pct"></span>
+        <div class="progress-track">
+          <div class="progress-fill" id="current-bar"></div>
         </div>
+        <div class="countdown" id="current-countdown">---</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="pct" id="weekly-pct">--%</span>
+          <span class="badge">Weekly</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="weekly-bar"></div>
+        </div>
+        <div class="countdown" id="weekly-countdown">---</div>
+        <div class="sub-bars" id="sub-bars">
+          <div class="sub-bar-row" id="opus-row">
+            <span class="sub-bar-label">Opus</span>
+            <div class="sub-bar-track">
+              <div class="sub-bar-fill" id="opus-fill"></div>
+            </div>
+            <span class="sub-bar-pct" id="opus-pct"></span>
+          </div>
+          <div class="sub-bar-row" id="sonnet-row">
+            <span class="sub-bar-label">Sonnet</span>
+            <div class="sub-bar-track">
+              <div class="sub-bar-fill" id="sonnet-fill"></div>
+            </div>
+            <span class="sub-bar-pct" id="sonnet-pct"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status-text" id="status-text"></span>
       </div>
     </div>
 
-  </div>
+    <script>
+      "use strict";
 
-  <div class="status-bar">
-    <span class="status-text" id="status-text"></span>
-  </div>
+      /* ── Sprites ── */
+      const SPRITE_BASE = "/sprites/";
+      const SPRITES = [
+        "idle_breathe.html",
+        "idle_blink.html",
+        "idle_look_around.html",
+        "expression_wink.html",
+        "expression_surprise.html",
+        "expression_sleep.html",
+        "dance_bounce.html",
+        "dance_sway.html",
+        "dance_bounce_dj.html",
+        "dance_sway_dj.html",
+        "dance_djmix.html",
+        "work_coding.html",
+        "work_think.html",
+      ];
+      let spriteIdx = Math.floor(Math.random() * SPRITES.length);
 
-  <script>
-    'use strict';
-
-    /* ── Sprites ── */
-    const SPRITE_BASE = '/sprites/';
-    const SPRITES = [
-      'idle_breathe.html','idle_blink.html','idle_look_around.html',
-      'expression_wink.html','expression_surprise.html','expression_sleep.html',
-      'dance_bounce.html','dance_sway.html','dance_bounce_dj.html',
-      'dance_sway_dj.html','dance_djmix.html',
-      'work_coding.html','work_think.html',
-    ];
-    let spriteIdx = Math.floor(Math.random() * SPRITES.length);
-
-    function nextSprite() {
-      spriteIdx = (spriteIdx + 1) % SPRITES.length;
-      document.getElementById('sprite').src = SPRITE_BASE + SPRITES[spriteIdx];
-    }
-
-    document.getElementById('sprite').src = SPRITE_BASE + SPRITES[spriteIdx];
-    setInterval(nextSprite, 8 * 1000);
-
-    /* ── Spinner: exact Clawdmeter ping-pong sequence ── */
-    const SPINNER_FRAMES = ['·', '✻', '✽', '✶', '✳', '✢'];
-    const SPINNER_MS     = [260, 130, 130, 130, 130, 260];
-    const SPINNER_COUNT  = SPINNER_FRAMES.length;          // 6
-    const SPINNER_PHASES = 2 * (SPINNER_COUNT - 1);        // 10
-
-    /* ── Status phrases (full Clawdmeter list) ── */
-    const PHRASES = [
-      'Accomplishing','Actioning','Actualizing','Architecting','Baking',
-      'Beaming','Beboppin\'','Befuddling','Billowing','Blanching','Bloviating',
-      'Boogieing','Boondoggling','Booping','Bootstrapping','Brewing','Bunning',
-      'Burrowing','Calculating','Canoodling','Caramelizing','Cascading',
-      'Catapulting','Cerebrating','Channeling','Channelling','Choreographing',
-      'Churning','Clauding','Coalescing','Cogitating','Combobulating',
-      'Composing','Computing','Concocting','Considering','Contemplating',
-      'Cooking','Crafting','Creating','Crunching','Crystallizing','Cultivating',
-      'Deciphering','Deliberating','Determining','Dilly-dallying',
-      'Discombobulating','Doing','Doodling','Drizzling','Ebbing','Effecting',
-      'Elucidating','Embellishing','Enchanting','Envisioning','Evaporating',
-      'Fermenting','Fiddle-faddling','Finagling','Flambéing','Flibbertigibbeting',
-      'Flowing','Flummoxing','Fluttering','Forging','Forming','Frolicking',
-      'Frosting','Gallivanting','Galloping','Garnishing','Generating',
-      'Gesticulating','Germinating','Gitifying','Grooving','Gusting',
-      'Harmonizing','Hashing','Hatching','Herding','Honking','Hullaballooing',
-      'Hyperspacing','Ideating','Imagining','Improvising','Incubating',
-      'Inferring','Infusing','Ionizing','Jitterbugging','Julienning','Kneading',
-      'Leavening','Levitating','Lollygagging','Manifesting','Marinating',
-      'Meandering','Metamorphosing','Misting','Moonwalking','Moseying','Mulling',
-      'Mustering','Musing','Nebulizing','Nesting','Newspapering','Noodling',
-      'Nucleating','Orbiting','Orchestrating','Osmosing','Perambulating',
-      'Percolating','Perusing','Philosophising','Photosynthesizing','Pollinating',
-      'Pondering','Pontificating','Pouncing','Precipitating','Prestidigitating',
-      'Processing','Proofing','Propagating','Puttering','Puzzling',
-      'Quantumizing','Razzle-dazzling','Razzmatazzing','Recombobulating',
-      'Reticulating','Roosting','Ruminating','Sautéing','Scampering',
-      'Schlepping','Scurrying','Seasoning','Shenaniganing','Shimmying',
-      'Simmering','Skedaddling','Sketching','Slithering','Smooshing',
-      'Sock-hopping','Spelunking','Spinning','Sprouting','Stewing',
-      'Sublimating','Swirling','Swooping','Symbioting','Synthesizing',
-      'Tempering','Thinking','Thundering','Tinkering','Tomfoolering',
-      'Topsy-turvying','Transfiguring','Transmuting','Twisting','Undulating',
-      'Unfurling','Unravelling','Vibing','Waddling','Wandering','Warping',
-      'Whatchamacalliting','Whirlpooling','Whirring','Whisking','Wibbling',
-      'Working','Wrangling','Zesting','Zigzagging',
-    ];
-
-    let spinnerPhase = 0;
-    let spinnerIdx   = 0;
-    let phraseIdx    = Math.floor(Math.random() * PHRASES.length);
-    let lastSpinner  = 0;
-    let lastPhrase   = 0;
-
-    function tickSpinner() {
-      const now = Date.now();
-
-      if (now - lastPhrase >= 4000) {
-        phraseIdx = (phraseIdx + 1) % PHRASES.length;
-        lastPhrase = now;
+      function nextSprite() {
+        spriteIdx = (spriteIdx + 1) % SPRITES.length;
+        document.getElementById("sprite").src =
+          SPRITE_BASE + SPRITES[spriteIdx];
       }
 
-      if (now - lastSpinner >= SPINNER_MS[spinnerIdx]) {
-        lastSpinner = now;
-        spinnerPhase = (spinnerPhase + 1) % SPINNER_PHASES;
-        spinnerIdx = spinnerPhase < SPINNER_COUNT
-          ? spinnerPhase
-          : SPINNER_PHASES - spinnerPhase;
+      document.getElementById("sprite").src = SPRITE_BASE + SPRITES[spriteIdx];
+      setInterval(nextSprite, 8 * 1000);
+
+      /* ── Spinner: exact Clawdmeter ping-pong sequence ── */
+      const SPINNER_FRAMES = ["·", "✻", "✽", "✶", "✳", "✢"];
+      const SPINNER_MS = [260, 130, 130, 130, 130, 260];
+      const SPINNER_COUNT = SPINNER_FRAMES.length; // 6
+      const SPINNER_PHASES = 2 * (SPINNER_COUNT - 1); // 10
+
+      /* ── Status phrases (full Clawdmeter list) ── */
+      const PHRASES = [
+        "Accomplishing",
+        "Actioning",
+        "Actualizing",
+        "Architecting",
+        "Baking",
+        "Beaming",
+        "Beboppin'",
+        "Befuddling",
+        "Billowing",
+        "Blanching",
+        "Bloviating",
+        "Boogieing",
+        "Boondoggling",
+        "Booping",
+        "Bootstrapping",
+        "Brewing",
+        "Bunning",
+        "Burrowing",
+        "Calculating",
+        "Canoodling",
+        "Caramelizing",
+        "Cascading",
+        "Catapulting",
+        "Cerebrating",
+        "Channeling",
+        "Channelling",
+        "Choreographing",
+        "Churning",
+        "Clauding",
+        "Coalescing",
+        "Cogitating",
+        "Combobulating",
+        "Composing",
+        "Computing",
+        "Concocting",
+        "Considering",
+        "Contemplating",
+        "Cooking",
+        "Crafting",
+        "Creating",
+        "Crunching",
+        "Crystallizing",
+        "Cultivating",
+        "Deciphering",
+        "Deliberating",
+        "Determining",
+        "Dilly-dallying",
+        "Discombobulating",
+        "Doing",
+        "Doodling",
+        "Drizzling",
+        "Ebbing",
+        "Effecting",
+        "Elucidating",
+        "Embellishing",
+        "Enchanting",
+        "Envisioning",
+        "Evaporating",
+        "Fermenting",
+        "Fiddle-faddling",
+        "Finagling",
+        "Flambéing",
+        "Flibbertigibbeting",
+        "Flowing",
+        "Flummoxing",
+        "Fluttering",
+        "Forging",
+        "Forming",
+        "Frolicking",
+        "Frosting",
+        "Gallivanting",
+        "Galloping",
+        "Garnishing",
+        "Generating",
+        "Gesticulating",
+        "Germinating",
+        "Gitifying",
+        "Grooving",
+        "Gusting",
+        "Harmonizing",
+        "Hashing",
+        "Hatching",
+        "Herding",
+        "Honking",
+        "Hullaballooing",
+        "Hyperspacing",
+        "Ideating",
+        "Imagining",
+        "Improvising",
+        "Incubating",
+        "Inferring",
+        "Infusing",
+        "Ionizing",
+        "Jitterbugging",
+        "Julienning",
+        "Kneading",
+        "Leavening",
+        "Levitating",
+        "Lollygagging",
+        "Manifesting",
+        "Marinating",
+        "Meandering",
+        "Metamorphosing",
+        "Misting",
+        "Moonwalking",
+        "Moseying",
+        "Mulling",
+        "Mustering",
+        "Musing",
+        "Nebulizing",
+        "Nesting",
+        "Newspapering",
+        "Noodling",
+        "Nucleating",
+        "Orbiting",
+        "Orchestrating",
+        "Osmosing",
+        "Perambulating",
+        "Percolating",
+        "Perusing",
+        "Philosophising",
+        "Photosynthesizing",
+        "Pollinating",
+        "Pondering",
+        "Pontificating",
+        "Pouncing",
+        "Precipitating",
+        "Prestidigitating",
+        "Processing",
+        "Proofing",
+        "Propagating",
+        "Puttering",
+        "Puzzling",
+        "Quantumizing",
+        "Razzle-dazzling",
+        "Razzmatazzing",
+        "Recombobulating",
+        "Reticulating",
+        "Roosting",
+        "Ruminating",
+        "Sautéing",
+        "Scampering",
+        "Schlepping",
+        "Scurrying",
+        "Seasoning",
+        "Shenaniganing",
+        "Shimmying",
+        "Simmering",
+        "Skedaddling",
+        "Sketching",
+        "Slithering",
+        "Smooshing",
+        "Sock-hopping",
+        "Spelunking",
+        "Spinning",
+        "Sprouting",
+        "Stewing",
+        "Sublimating",
+        "Swirling",
+        "Swooping",
+        "Symbioting",
+        "Synthesizing",
+        "Tempering",
+        "Thinking",
+        "Thundering",
+        "Tinkering",
+        "Tomfoolering",
+        "Topsy-turvying",
+        "Transfiguring",
+        "Transmuting",
+        "Twisting",
+        "Undulating",
+        "Unfurling",
+        "Unravelling",
+        "Vibing",
+        "Waddling",
+        "Wandering",
+        "Warping",
+        "Whatchamacalliting",
+        "Whirlpooling",
+        "Whirring",
+        "Whisking",
+        "Wibbling",
+        "Working",
+        "Wrangling",
+        "Zesting",
+        "Zigzagging",
+      ];
+
+      let spinnerPhase = 0;
+      let spinnerIdx = 0;
+      let phraseIdx = Math.floor(Math.random() * PHRASES.length);
+      let lastSpinner = 0;
+      let lastPhrase = 0;
+
+      function tickSpinner() {
+        const now = Date.now();
+
+        if (now - lastPhrase >= 4000) {
+          let next;
+          do { next = Math.floor(Math.random() * PHRASES.length); } while (next === phraseIdx);
+          phraseIdx = next;
+          lastPhrase = now;
+        }
+
+        if (now - lastSpinner >= SPINNER_MS[spinnerIdx]) {
+          lastSpinner = now;
+          spinnerPhase = (spinnerPhase + 1) % SPINNER_PHASES;
+          spinnerIdx =
+            spinnerPhase < SPINNER_COUNT
+              ? spinnerPhase
+              : SPINNER_PHASES - spinnerPhase;
+        }
+
+        document.getElementById("status-text").textContent =
+          SPINNER_FRAMES[spinnerIdx] + " " + PHRASES[phraseIdx] + "…";
       }
 
-      document.getElementById('status-text').textContent =
-        SPINNER_FRAMES[spinnerIdx] + ' ' + PHRASES[phraseIdx] + '…';
-    }
+      /* ── Usage rendering ── */
+      let usageData = null;
 
-    /* ── Usage rendering ── */
-    let usageData = null;
-
-    // Matches pct_color() in ui.cpp exactly
-    function getColor(pct) {
-      if (pct >= 80) return '#c0392b';
-      if (pct >= 50) return '#d97757';
-      return '#788c5d';
-    }
-
-    function formatCountdown(isoString) {
-      const diff = new Date(isoString) - Date.now();
-      if (diff <= 0) return 'Resetting…';
-      const totalSec = Math.floor(diff / 1000);
-      const days  = Math.floor(totalSec / 86400);
-      const hours = Math.floor((totalSec % 86400) / 3600);
-      const mins  = Math.floor((totalSec % 3600) / 60);
-      const secs  = totalSec % 60;
-      if (days  > 0) return `Resets in ${days}d ${hours}h`;
-      if (hours > 0) return `Resets in ${hours}h ${mins}m`;
-      return `Resets in ${mins}m ${secs}s`;
-    }
-
-    function applyBar(fillId, pctId, utilization, fixedColor) {
-      const pct   = Math.round(Math.max(0, Math.min(100, utilization)));
-      const color = fixedColor ?? getColor(pct);
-      document.getElementById(fillId).style.width      = pct + '%';
-      document.getElementById(fillId).style.background = color;
-      if (pctId) {
-        document.getElementById(pctId).textContent = pct + '%';
+      // Matches pct_color() in ui.cpp exactly
+      function getColor(pct) {
+        if (pct >= 80) return "#c0392b";
+        if (pct >= 50) return "#d97757";
+        return "#788c5d";
       }
-    }
 
-    function render(data) {
-      if (!data.five_hour || !data.seven_day) return;
-      usageData = data;
-
-      applyBar('current-bar', 'current-pct', data.five_hour.utilization, '#d97757');
-      applyBar('weekly-bar',  'weekly-pct',  data.seven_day.utilization);
-
-      const hasOpus   = data.seven_day_opus   !== null;
-      const hasSonnet = data.seven_day_sonnet !== null;
-      const hasAny    = hasOpus || hasSonnet;
-
-      document.getElementById('sub-bars').style.display   = hasAny    ? 'flex' : 'none';
-      document.getElementById('opus-row').style.display   = hasOpus   ? 'flex' : 'none';
-      document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex' : 'none';
-
-      if (hasOpus)   applyBar('opus-fill',   'opus-pct',   data.seven_day_opus.utilization);
-      if (hasSonnet) applyBar('sonnet-fill', 'sonnet-pct', data.seven_day_sonnet.utilization);
-
-      tickTime();
-    }
-
-    function tickTime() {
-      if (!usageData) return;
-      document.getElementById('current-countdown').textContent =
-        formatCountdown(usageData.five_hour.resets_at);
-      document.getElementById('weekly-countdown').textContent =
-        formatCountdown(usageData.seven_day.resets_at);
-    }
-
-    async function fetchAndRender() {
-      try {
-        const res  = await fetch('/usage');
-        const data = await res.json();
-        render(data);
-      } catch (e) {
-        console.error('Failed to fetch /usage:', e);
+      function formatCountdown(isoString) {
+        const diff = new Date(isoString) - Date.now();
+        if (diff <= 0) return "Resetting…";
+        const totalSec = Math.floor(diff / 1000);
+        const days = Math.floor(totalSec / 86400);
+        const hours = Math.floor((totalSec % 86400) / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = totalSec % 60;
+        if (days > 0) return `Resets in ${days}d ${hours}h`;
+        if (hours > 0) return `Resets in ${hours}h ${mins}m`;
+        return `Resets in ${mins}m ${secs}s`;
       }
-    }
 
-    fetchAndRender();
-    setInterval(fetchAndRender, 30_000);
-    setInterval(tickTime, 1_000);
-    setInterval(tickSpinner, 50);   // check every 50ms, fire based on per-frame ms
-  </script>
-</body>
+      function applyBar(fillId, pctId, utilization, fixedColor) {
+        const pct = Math.round(Math.max(0, Math.min(100, utilization)));
+        const color = fixedColor ?? getColor(pct);
+        document.getElementById(fillId).style.width = pct + "%";
+        document.getElementById(fillId).style.background = color;
+        if (pctId) {
+          document.getElementById(pctId).textContent = pct + "%";
+        }
+      }
+
+      function render(data) {
+        if (!data.five_hour || !data.seven_day) return;
+        usageData = data;
+
+        applyBar(
+          "current-bar",
+          "current-pct",
+          data.five_hour.utilization,
+          "#d97757",
+        );
+        applyBar("weekly-bar", "weekly-pct", data.seven_day.utilization);
+
+        const hasOpus = data.seven_day_opus !== null;
+        const hasSonnet = data.seven_day_sonnet !== null;
+        const hasAny = hasOpus || hasSonnet;
+
+        document.getElementById("sub-bars").style.display = hasAny
+          ? "flex"
+          : "none";
+        document.getElementById("opus-row").style.display = hasOpus
+          ? "flex"
+          : "none";
+        document.getElementById("sonnet-row").style.display = hasSonnet
+          ? "flex"
+          : "none";
+
+        if (hasOpus)
+          applyBar("opus-fill", "opus-pct", data.seven_day_opus.utilization);
+        if (hasSonnet)
+          applyBar(
+            "sonnet-fill",
+            "sonnet-pct",
+            data.seven_day_sonnet.utilization,
+          );
+
+        tickTime();
+      }
+
+      function tickTime() {
+        if (!usageData) return;
+        document.getElementById("current-countdown").textContent =
+          formatCountdown(usageData.five_hour.resets_at);
+        document.getElementById("weekly-countdown").textContent =
+          formatCountdown(usageData.seven_day.resets_at);
+      }
+
+      async function fetchAndRender() {
+        try {
+          const res = await fetch("/usage");
+          const data = await res.json();
+          render(data);
+        } catch (e) {
+          console.error("Failed to fetch /usage:", e);
+        }
+      }
+
+      fetchAndRender();
+      setInterval(fetchAndRender, 30_000);
+      setInterval(tickTime, 1_000);
+      setInterval(tickSpinner, 50); // check every 50ms, fire based on per-frame ms
+    </script>
+  </body>
 </html>
