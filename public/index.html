@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=800, height=480, user-scalable=no">
+  <title>Claude Usage</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      width: 800px;
+      height: 480px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px 8px;
+      gap: 8px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      height: 50px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .robot { font-size: 30px; line-height: 1; }
+    .title { font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+    .battery { font-size: 24px; opacity: 0.75; }
+
+    /* ── Cards ── */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 10px 16px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .pct {
+      font-size: 50px;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .badge {
+      background: #5b21b6;
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Progress bars ── */
+    .progress-track {
+      background: #2a2a2a;
+      border-radius: 6px;
+      height: 14px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      width: 0%;
+      transition: width 0.6s ease, background-color 0.6s ease;
+    }
+
+    .countdown {
+      font-size: 15px;
+      opacity: 0.80;
+    }
+
+    /* ── Sub-bars (Opus / Sonnet) ── */
+    .sub-bars {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .sub-bar-row {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-bar-label {
+      font-size: 11px;
+      width: 48px;
+      opacity: 0.65;
+      flex-shrink: 0;
+    }
+
+    .sub-bar-track {
+      background: #2a2a2a;
+      border-radius: 4px;
+      height: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sub-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.6s ease;
+    }
+
+    .sub-bar-pct {
+      font-size: 11px;
+      width: 34px;
+      text-align: right;
+      opacity: 0.65;
+      flex-shrink: 0;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      flex-shrink: 0;
+      height: 26px;
+      display: flex;
+      align-items: center;
+    }
+
+    .status-text {
+      color: #f97316;
+      font-size: 13px;
+      letter-spacing: 1px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <span class="robot">🤖</span>
+      <span class="title">Claude Usage</span>
+    </div>
+    <span class="battery">🔋</span>
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="pct" id="current-pct">--</span>
+        <span class="badge">Current</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="current-bar"></div>
+      </div>
+      <div class="countdown" id="current-countdown">--</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="pct" id="weekly-pct">--</span>
+        <span class="badge">Weekly</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="weekly-bar"></div>
+      </div>
+      <div class="countdown" id="weekly-countdown">--</div>
+      <div class="sub-bars" id="sub-bars">
+        <div class="sub-bar-row" id="opus-row">
+          <span class="sub-bar-label">Opus</span>
+          <div class="sub-bar-track">
+            <div class="sub-bar-fill" id="opus-fill"></div>
+          </div>
+          <span class="sub-bar-pct" id="opus-pct"></span>
+        </div>
+        <div class="sub-bar-row" id="sonnet-row">
+          <span class="sub-bar-label">Sonnet</span>
+          <div class="sub-bar-track">
+            <div class="sub-bar-fill" id="sonnet-fill"></div>
+          </div>
+          <span class="sub-bar-pct" id="sonnet-pct"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="status-bar">
+    <span class="status-text">* Active</span>
+  </div>
+
+  <script>
+    // JS added in Task 5
+  </script>
+</body>
+</html>
