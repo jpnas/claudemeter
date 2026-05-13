@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=800, height=480, user-scalable=no">
   <title>Claude Usage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,7 +26,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 16px 22px 12px;
+      padding: 16px 28px 12px;
       gap: 10px;
       flex-shrink: 0;
     }
@@ -36,20 +36,20 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
-      height: 54px;
-      gap: 18px;
+      height: 60px;
+      gap: 20px;
     }
 
     .logo {
-      width: 48px;
-      height: 48px;
+      width: 60px;
+      height: 60px;
       flex-shrink: 0;
       image-rendering: pixelated;
     }
 
     .title {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 40px;
+      font-size: 44px;
       font-weight: 400;
       letter-spacing: 0.5px;
       color: #faf9f5;
@@ -59,53 +59,60 @@
     .cards {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       flex: 1;
       min-height: 0;
     }
 
     .card {
       background: #1f1f1e;
-      border-radius: 10px;
-      padding: 12px 18px 14px;
+      border-radius: 8px;
+      padding: 12px 16px 12px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 0;
       min-height: 0;
+      position: relative;
     }
 
     .card-header {
       display: flex;
-      align-items: baseline;
+      align-items: flex-start;
       justify-content: space-between;
+      margin-bottom: 8px;
     }
 
+    /* % label — DM Sans bold (matches font_styrene_48) */
     .pct {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 58px;
-      font-weight: 400;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 52px;
+      font-weight: 700;
       line-height: 1;
       color: #faf9f5;
     }
 
+    /* Pill — background matches bar track (#2a2a28), font_styrene_28 ≈ 20px */
     .badge {
-      background: #3d2060;
-      border-radius: 20px;
-      padding: 5px 20px;
-      font-size: 13px;
+      background: #2a2a28;
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
       font-weight: 500;
-      letter-spacing: 0.3px;
       color: #faf9f5;
+      flex-shrink: 0;
+      margin-top: 4px;
     }
 
-    /* ── Progress bars ── */
+    /* ── Progress bars — height 24px matching firmware ── */
     .progress-track {
       background: #2a2a28;
       border-radius: 6px;
-      height: 14px;
+      height: 24px;
       overflow: hidden;
       flex-shrink: 0;
+      margin-bottom: 8px;
     }
 
     .progress-fill {
@@ -115,11 +122,12 @@
       transition: width 0.7s ease, background-color 0.7s ease;
     }
 
+    /* Resets in — font_styrene_28 ≈ 20px, COL_DIM */
     .countdown {
-      font-size: 14px;
-      font-weight: 300;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
       color: #b0aea5;
-      letter-spacing: 0.2px;
     }
 
     /* ── Sub-bars (Opus / Sonnet) ── */
@@ -127,7 +135,7 @@
       display: none;
       flex-direction: column;
       gap: 5px;
-      margin-top: 2px;
+      margin-top: 6px;
     }
 
     .sub-bar-row {
@@ -137,8 +145,8 @@
     }
 
     .sub-bar-label {
-      font-size: 11px;
-      width: 48px;
+      font-size: 13px;
+      width: 52px;
       color: #b0aea5;
       flex-shrink: 0;
     }
@@ -146,7 +154,7 @@
     .sub-bar-track {
       background: #2a2a28;
       border-radius: 4px;
-      height: 8px;
+      height: 10px;
       flex: 1;
       overflow: hidden;
     }
@@ -159,33 +167,28 @@
     }
 
     .sub-bar-pct {
-      font-size: 11px;
-      width: 34px;
+      font-size: 13px;
+      width: 36px;
       text-align: right;
       color: #b0aea5;
       flex-shrink: 0;
     }
 
-    /* ── Status bar ── */
+    /* ── Status bar — font_mono_32, COL_ACCENT ── */
     .status-bar {
       flex-shrink: 0;
-      height: 26px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .status-text {
+      font-family: 'DM Mono', 'Courier New', monospace;
       color: #d97757;
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 400;
-      letter-spacing: 2px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.3; }
+      letter-spacing: 1px;
     }
   </style>
 </head>
@@ -200,24 +203,24 @@
 
     <div class="card">
       <div class="card-header">
-        <span class="pct" id="current-pct">--</span>
+        <span class="pct" id="current-pct">--%</span>
         <span class="badge">Current</span>
       </div>
       <div class="progress-track">
         <div class="progress-fill" id="current-bar"></div>
       </div>
-      <div class="countdown" id="current-countdown">--</div>
+      <div class="countdown" id="current-countdown">---</div>
     </div>
 
     <div class="card">
       <div class="card-header">
-        <span class="pct" id="weekly-pct">--</span>
+        <span class="pct" id="weekly-pct">--%</span>
         <span class="badge">Weekly</span>
       </div>
       <div class="progress-track">
         <div class="progress-fill" id="weekly-bar"></div>
       </div>
-      <div class="countdown" id="weekly-countdown">--</div>
+      <div class="countdown" id="weekly-countdown">---</div>
       <div class="sub-bars" id="sub-bars">
         <div class="sub-bar-row" id="opus-row">
           <span class="sub-bar-label">Opus</span>
@@ -239,48 +242,82 @@
   </div>
 
   <div class="status-bar">
-    <span class="status-text" id="status-text">* Active</span>
+    <span class="status-text" id="status-text"></span>
   </div>
 
   <script>
     'use strict';
 
-    /* ── Status text cycling (from Clawdmeter phrase pool) ── */
-    const STATUS_PHRASES = [
-      'Baking', 'Brewing', 'Clauding', 'Crafting', 'Coding',
-      'Debugging', 'Deliberating', 'Designing', 'Drafting',
-      'Editing', 'Engineering', 'Exploring', 'Fetching',
-      'Finalizing', 'Finishing', 'Focusing', 'Formulating',
-      'Generating', 'Glowing', 'Grooving', 'Hashing',
-      'Hatching', 'Healing', 'Iterating', 'Musing',
-      'Pondering', 'Processing', 'Reasoning', 'Rendering',
-      'Scheming', 'Synthesizing', 'Thinking', 'Vibing',
-      'Wandering', 'Weaving', 'Working'
-    ];
-    let phraseIdx = Math.floor(Math.random() * STATUS_PHRASES.length);
-    function cycleStatus() {
-      phraseIdx = (phraseIdx + 1) % STATUS_PHRASES.length;
-      document.getElementById('status-text').textContent =
-        '* ' + STATUS_PHRASES[phraseIdx] + '...';
-    }
-    setInterval(cycleStatus, 4000);
-    cycleStatus();
+    /* ── Spinner: exact Clawdmeter ping-pong sequence ── */
+    const SPINNER_FRAMES = ['·', '✻', '✽', '✶', '✳', '✢'];
+    const SPINNER_MS     = [260, 130, 130, 130, 130, 260];
+    const SPINNER_COUNT  = SPINNER_FRAMES.length;          // 6
+    const SPINNER_PHASES = 2 * (SPINNER_COUNT - 1);        // 10
 
-    /* ── Usage data ── */
+    /* ── Status phrases (full Clawdmeter list) ── */
+    const PHRASES = [
+      'Accomplishing','Elucidating','Perusing','Actioning','Enchanting',
+      'Philosophising','Actualizing','Envisioning','Pondering','Baking',
+      'Finagling','Pontificating','Booping','Flibbertigibbeting','Processing',
+      'Brewing','Forging','Puttering','Calculating','Forming','Puzzling',
+      'Cerebrating','Frolicking','Reticulating','Channelling','Generating',
+      'Ruminating','Churning','Germinating','Scheming','Clauding','Hatching',
+      'Schlepping','Coalescing','Herding','Shimmying','Cogitating','Honking',
+      'Shucking','Combobulating','Hustling','Simmering','Computing','Ideating',
+      'Smooshing','Concocting','Imagining','Spelunking','Conjuring','Incubating',
+      'Spinning','Considering','Inferring','Stewing','Contemplating','Jiving',
+      'Sussing','Cooking','Manifesting','Synthesizing','Crafting','Marinating',
+      'Thinking','Creating','Meandering','Tinkering','Crunching','Moseying',
+      'Transmuting','Deciphering','Mulling','Unfurling','Deliberating',
+      'Mustering','Unravelling','Determining','Musing','Vibing',
+      'Discombobulating','Noodling','Wandering','Divining','Percolating',
+      'Whirring','Doing','Wibbling','Effecting','Wizarding','Working','Wrangling',
+    ];
+
+    let spinnerPhase = 0;
+    let spinnerIdx   = 0;
+    let phraseIdx    = Math.floor(Math.random() * PHRASES.length);
+    let lastSpinner  = 0;
+    let lastPhrase   = 0;
+
+    function tickSpinner() {
+      const now = Date.now();
+
+      if (now - lastPhrase >= 4000) {
+        phraseIdx = (phraseIdx + 1) % PHRASES.length;
+        lastPhrase = now;
+      }
+
+      if (now - lastSpinner >= SPINNER_MS[spinnerIdx]) {
+        lastSpinner = now;
+        spinnerPhase = (spinnerPhase + 1) % SPINNER_PHASES;
+        spinnerIdx = spinnerPhase < SPINNER_COUNT
+          ? spinnerPhase
+          : SPINNER_PHASES - spinnerPhase;
+      }
+
+      document.getElementById('status-text').textContent =
+        SPINNER_FRAMES[spinnerIdx] + ' ' + PHRASES[phraseIdx] + '…';
+    }
+
+    /* ── Usage rendering ── */
     let usageData = null;
 
+    // Matches pct_color() in ui.cpp exactly
     function getColor(pct) {
-      return pct < 50 ? '#788c5d' : '#d97757';
+      if (pct >= 80) return '#c0392b';
+      if (pct >= 50) return '#d97757';
+      return '#788c5d';
     }
 
     function formatCountdown(isoString) {
       const diff = new Date(isoString) - Date.now();
-      if (diff <= 0) return 'Resetting...';
+      if (diff <= 0) return 'Resetting…';
       const totalSec = Math.floor(diff / 1000);
-      const days    = Math.floor(totalSec / 86400);
-      const hours   = Math.floor((totalSec % 86400) / 3600);
-      const mins    = Math.floor((totalSec % 3600) / 60);
-      const secs    = totalSec % 60;
+      const days  = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins  = Math.floor((totalSec % 3600) / 60);
+      const secs  = totalSec % 60;
       if (days  > 0) return `Resets in ${days}d ${hours}h`;
       if (hours > 0) return `Resets in ${hours}h ${mins}m`;
       return `Resets in ${mins}m ${secs}s`;
@@ -311,13 +348,13 @@
       document.getElementById('opus-row').style.display   = hasOpus   ? 'flex' : 'none';
       document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex' : 'none';
 
-      if (hasOpus)   applyBar('opus-fill', 'opus-pct',    data.seven_day_opus.utilization);
+      if (hasOpus)   applyBar('opus-fill',   'opus-pct',   data.seven_day_opus.utilization);
       if (hasSonnet) applyBar('sonnet-fill', 'sonnet-pct', data.seven_day_sonnet.utilization);
 
-      tick();
+      tickTime();
     }
 
-    function tick() {
+    function tickTime() {
       if (!usageData) return;
       document.getElementById('current-countdown').textContent =
         formatCountdown(usageData.five_hour.resets_at);
@@ -337,7 +374,8 @@
 
     fetchAndRender();
     setInterval(fetchAndRender, 30_000);
-    setInterval(tick, 1_000);
+    setInterval(tickTime, 1_000);
+    setInterval(tickSpinner, 50);   // check every 50ms, fire based on per-frame ms
   </script>
 </body>
 </html>
