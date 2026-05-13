@@ -241,7 +241,7 @@
     }
 
     function applyBar(fillId, pctId, utilization) {
-      const pct   = Math.round(utilization);
+      const pct   = Math.round(Math.max(0, Math.min(100, utilization)));
       const color = getColor(pct);
       document.getElementById(fillId).style.width      = pct + '%';
       document.getElementById(fillId).style.background = color;
@@ -252,6 +252,7 @@
     }
 
     function render(data) {
+      if (!data.five_hour || !data.seven_day) return;
       usageData = data;
 
       applyBar('current-bar', 'current-pct', data.five_hour.utilization);
