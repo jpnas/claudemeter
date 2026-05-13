@@ -343,9 +343,9 @@
       return `Resets in ${mins}m ${secs}s`;
     }
 
-    function applyBar(fillId, pctId, utilization) {
+    function applyBar(fillId, pctId, utilization, fixedColor) {
       const pct   = Math.round(Math.max(0, Math.min(100, utilization)));
-      const color = getColor(pct);
+      const color = fixedColor ?? getColor(pct);
       document.getElementById(fillId).style.width      = pct + '%';
       document.getElementById(fillId).style.background = color;
       if (pctId) {
@@ -357,7 +357,7 @@
       if (!data.five_hour || !data.seven_day) return;
       usageData = data;
 
-      applyBar('current-bar', 'current-pct', data.five_hour.utilization);
+      applyBar('current-bar', 'current-pct', data.five_hour.utilization, '#d97757');
       applyBar('weekly-bar',  'weekly-pct',  data.seven_day.utilization);
 
       const hasOpus   = data.seven_day_opus   !== null;
