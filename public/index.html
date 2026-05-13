@@ -26,7 +26,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 16px clamp(12px, 3.5vw, 28px) 12px;
+      padding: 16px 28px 12px;
       gap: 10px;
       flex-shrink: 0;
     }
@@ -50,7 +50,7 @@
 
     .title {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: clamp(26px, 5.5vw, 44px);
+      font-size: 44px;
       font-weight: 400;
       letter-spacing: 0.5px;
       color: #faf9f5;
@@ -86,19 +86,21 @@
     /* % label — DM Sans bold (matches font_styrene_48) */
     .pct {
       font-family: 'DM Sans', sans-serif;
-      font-size: clamp(28px, 6.5vw, 52px);
+      font-size: 52px;
       font-weight: 700;
       line-height: 1;
       color: #faf9f5;
+      min-width: 0;
+      overflow: hidden;
     }
 
     /* Pill — background matches bar track (#2a2a28), font_styrene_28 ≈ 20px */
     .badge {
       background: #2a2a28;
       border-radius: 999px;
-      padding: clamp(4px, 0.75vw, 6px) clamp(10px, 2.25vw, 18px);
+      padding: 6px 18px;
       font-family: 'DM Sans', sans-serif;
-      font-size: clamp(13px, 2.5vw, 20px);
+      font-size: 20px;
       font-weight: 500;
       color: #faf9f5;
       flex-shrink: 0;
@@ -125,7 +127,7 @@
     /* Resets in — font_styrene_28 ≈ 20px, COL_DIM */
     .countdown {
       font-family: 'DM Sans', sans-serif;
-      font-size: clamp(13px, 2.5vw, 20px);
+      font-size: 20px;
       font-weight: 400;
       color: #b0aea5;
     }
