@@ -44,7 +44,8 @@
       width: 60px;
       height: 60px;
       flex-shrink: 0;
-      image-rendering: pixelated;
+      border: none;
+      background: transparent;
     }
 
     .title {
@@ -195,7 +196,7 @@
 <body>
 
   <div class="header">
-    <img class="logo" src="/logo.png" alt="Claude">
+    <iframe class="logo" id="sprite" src="" title="Claude sprite" scrolling="no"></iframe>
     <span class="title">Usage</span>
   </div>
 
@@ -247,6 +248,25 @@
 
   <script>
     'use strict';
+
+    /* ── Sprites ── */
+    const SPRITE_BASE = 'https://claudepix.vercel.app/animations/';
+    const SPRITES = [
+      'idle_breathe.html','idle_blink.html','idle_look_around.html',
+      'expression_wink.html','expression_surprise.html','expression_sleep.html',
+      'dance_bounce.html','dance_sway.html','dance_bounce_dj.html',
+      'dance_sway_dj.html','dance_djmix.html',
+      'work_coding.html','work_think.html',
+    ];
+    let spriteIdx = Math.floor(Math.random() * SPRITES.length);
+
+    function nextSprite() {
+      spriteIdx = (spriteIdx + 1) % SPRITES.length;
+      document.getElementById('sprite').src = SPRITE_BASE + SPRITES[spriteIdx];
+    }
+
+    document.getElementById('sprite').src = SPRITE_BASE + SPRITES[spriteIdx];
+    setInterval(nextSprite, 5 * 60 * 1000);
 
     /* ── Spinner: exact Clawdmeter ping-pong sequence ── */
     const SPINNER_FRAMES = ['·', '✻', '✽', '✶', '✳', '✢'];
