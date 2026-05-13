@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>expression_wink</title>
+<style>
+  html, body { margin: 0; background: #0f0f0f; height: 100%; font-family: "JetBrains Mono", monospace; }
+  .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 8%; box-sizing: border-box; }
+  .grid { width: 100%; max-width: 520px; }
+</style>
+</head>
+<body>
+  <div class="stage"><div id="grid" class="grid"></div></div>
+  <script src="creature-engine.js"></script>
+  <script>
+    const { BODY, EYE, CREATURE, patch, shift } = window.PixelEngine;
+
+    // Wink = right eye (cols 13-14 rows 6-7) closes
+    // Step 1: right eye squints (close top row only)
+    const SQUINT_R = patch(CREATURE, [[6,13,BODY]]);
+
+    // Step 2: right eye fully closed
+    const WINK = patch(CREATURE, [[6,13,BODY],[7,13,BODY]]);
+
+    // Step 3: head tilts right (shift 0,+1) + right eye still closed
+    const TILT = shift(CREATURE, 0, 1);
+    const TILT_WINK = patch(TILT, [[6,14,BODY],[7,14,BODY]]);
+
+    // Step 4: sparkle pixels near winked eye
+    const SPARKLE1 = patch(TILT_WINK, [[4,17,BODY],[5,18,BODY]]);
+    const SPARKLE2 = patch(TILT_WINK, [[3,18,BODY],[5,17,BODY]]);
+    const SPARKLE3 = patch(TILT_WINK, [[4,18,BODY]]);
+
+    // Step 5: reopen — squint while tilted
+    const TILT_SQUINT = patch(TILT, [[6,14,BODY]]);
+
+    // Step 6: head returns, eye reopens (squint on base)
+    const RETURN_SQUINT = patch(CREATURE, [[6,13,BODY]]);
+
+    const PRESET = {
+      name: "expression wink",
+      category: "Expressions",
+      description: "Playful wink, squint, close, head tilt, sparkle, then smoothly reopen.",
+      frames: [
+        { hold: 1200, frame: null },
+        // anticipation
+        { hold: 100,  frame: SQUINT_R },
+        // wink closes
+        { hold: 120,  frame: WINK },
+        // head tilts into the wink
+        { hold: 150,  frame: TILT_WINK },
+        // sparkle sequence
+        { hold: 120,  frame: SPARKLE1 },
+        { hold: 100,  frame: SPARKLE2 },
+        { hold: 100,  frame: SPARKLE3 },
+        // hold wink with tilt
+        { hold: 400,  frame: TILT_WINK },
+        // reopen — squint first
+        { hold: 100,  frame: TILT_SQUINT },
+        // head returns, eye still squinting
+        { hold: 100,  frame: RETURN_SQUINT },
+        // fully open
+        { hold: 80,   frame: null },
+        // brief rest before loop
+        { hold: 800,  frame: null },
+      ],
+    };
+
+    window.PRESET = PRESET;
+    window.PixelEngine.mount(document.getElementById('grid'), { preset: PRESET });
+  </script>
+</body>
+</html>

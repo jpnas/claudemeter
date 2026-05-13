@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>expression_surprise</title>
+<style>
+  html, body { margin: 0; background: #0f0f0f; height: 100%; font-family: "JetBrains Mono", monospace; }
+  .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 8%; box-sizing: border-box; }
+  .grid { width: 100%; max-width: 520px; }
+</style>
+</head>
+<body>
+  <div class="stage"><div id="grid" class="grid"></div></div>
+  <script src="creature-engine.js"></script>
+  <script>
+    const { BODY, EYE, CREATURE, patch, shift } = window.PixelEngine;
+
+    // Anticipation: subtle squint before the shock
+    const ANTICIPATE = patch(CREATURE, [[6,7,BODY],[6,13,BODY]]);
+
+    // Wide eyes: expand each eye to 2×2 block
+    const WIDE = patch(CREATURE, [
+      [6,6,EYE],[6,7,EYE],[6,8,EYE],
+      [7,6,EYE],[7,7,EYE],[7,8,EYE],
+      [6,12,EYE],[6,13,EYE],[6,14,EYE],
+      [7,12,EYE],[7,13,EYE],[7,14,EYE],
+    ]);
+
+    // Recoil: whole body shifts up + wide eyes (eyes shift to rows 5-6)
+    const RECOIL = patch(shift(CREATURE, -1, 0), [
+      [5,6,EYE],[5,7,EYE],[5,8,EYE],
+      [6,6,EYE],[6,7,EYE],[6,8,EYE],
+      [5,12,EYE],[5,13,EYE],[5,14,EYE],
+      [6,12,EYE],[6,13,EYE],[6,14,EYE],
+    ]);
+
+    // Shock lines: pixels radiating out from head
+    const SHOCK1 = patch(RECOIL, [
+      [2,4,BODY],[2,10,BODY],[2,15,BODY],
+      [3,2,BODY],[3,17,BODY],
+    ]);
+    const SHOCK2 = patch(RECOIL, [
+      [1,3,BODY],[1,10,BODY],[1,16,BODY],
+      [2,1,BODY],[2,18,BODY],
+      [4,0,BODY],[4,19,BODY],
+    ]);
+    const SHOCK3 = patch(RECOIL, [
+      [0,5,BODY],[0,14,BODY],
+      [2,0,BODY],[2,19,BODY],
+    ]);
+
+    // Settle halfway — body back to normal but eyes still wide
+    const SETTLE_WIDE = patch(CREATURE, [
+      [6,6,EYE],[6,7,EYE],[6,8,EYE],
+      [7,6,EYE],[7,7,EYE],[7,8,EYE],
+      [6,12,EYE],[6,13,EYE],[6,14,EYE],
+      [7,12,EYE],[7,13,EYE],[7,14,EYE],
+    ]);
+
+    // Settle more — one extra eye pixel still open
+    const SETTLE_HALF = patch(CREATURE, [
+      [6,6,EYE],[6,7,EYE],
+      [6,13,EYE],[6,14,EYE],
+      [7,7,EYE],[7,13,EYE],
+    ]);
+
+    const PRESET = {
+      name: "expression surprise",
+      category: "Expressions",
+      description: "Shock, anticipate, eyes widen, recoil up, shock lines radiate, then slowly settle.",
+      frames: [
+        { hold: 900,  frame: null },
+        // anticipation squeeze
+        { hold: 120,  frame: ANTICIPATE },
+        // BAM — wide eyes
+        { hold: 60,   frame: WIDE },
+        // recoil upward
+        { hold: 80,   frame: RECOIL },
+        // shock particles radiate
+        { hold: 100,  frame: SHOCK1 },
+        { hold: 100,  frame: SHOCK2 },
+        { hold: 100,  frame: SHOCK3 },
+        // hold shock
+        { hold: 500,  frame: RECOIL },
+        // settle back down — eyes still wide
+        { hold: 180,  frame: SETTLE_WIDE },
+        // eyes shrinking back
+        { hold: 180,  frame: SETTLE_HALF },
+        // fully settled
+        { hold: 300,  frame: null },
+        { hold: 600,  frame: null },
+      ],
+    };
+
+    window.PRESET = PRESET;
+    window.PixelEngine.mount(document.getElementById('grid'), { preset: PRESET });
+  </script>
+</body>
+</html>

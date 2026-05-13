@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>dance_djmix</title>
+<style>
+  html,body{margin:0;background:#0f0f0f;height:100%;font-family:monospace}
+  .stage{width:100%;height:100%;display:grid;place-items:center;padding:8%;box-sizing:border-box}
+  #grid{width:100%;max-width:520px;aspect-ratio:1;display:grid;
+    grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(20,1fr);background:#0f0f0f}
+</style>
+</head>
+<body>
+<div class="stage"><div id="grid"></div></div>
+<script>
+/* STANDALONE */
+// 0=empty 1=body 2=eye 3=headphone 4=table 5=blue-key 6=gray-key 7=white/particle
+const PAL=['transparent','#CD7F6A','#111111','#c0d8e4','#282828','#5599dd','#606060','#ffffff','#eaf6fc','#7aaabb'];
+const E=0,B=1,Y=2,H=3,T=4,K=5,G=6,W=7,HL=8,HS=9;
+
+const host=document.getElementById('grid');
+const cells=[];
+for(let r=0;r<20;r++){cells.push([]);for(let c=0;c<20;c++){
+  const d=document.createElement('div');host.appendChild(d);cells[r].push(d);
+}}
+function paint(f){
+  for(let r=0;r<20;r++)for(let c=0;c<20;c++){
+    const v=f[r][c],el=cells[r][c];
+    el.style.background=PAL[v]||'transparent';
+    el.style.boxShadow=(v&&v!==W)?'inset 0 0 0 1px rgba(0,0,0,0.3)':'none';
+  }
+}
+function pt(f,ops){const o=f.map(r=>r.slice());ops.forEach(([r,c,v])=>{if(r>=0&&r<20&&c>=0&&c<20)o[r][c]=v;});return o;}
+function px(f,pts){return pt(f,pts.map(([r,c])=>[r,c,W]));}
+
+// ── BASE: DJ at table ─────────────────────────────────────────
+// Upper body (rows 0-9): creature with headphones
+// Table (rows 10-15): DJ keyboard
+const BASE=[
+  [E,E,E,E,E,E,HL,HL,HL,HL,HL,HL,HL,HL,E,E,E,E,E,E],// 0 wide headband top
+  [E,E,E,E,E,HL,HS,E,E,E,E,E,E,HS,HL,E,E,E,E,E],    // 1 headband descenders
+  [E,E,E,E,HL,HS,B,B,B,B,B,B,B,B,HS,HL,E,E,E,E],    // 2 ear cup top + head
+  [E,E,E,E,HL,HS,B,B,Y,B,B,B,Y,B,HS,HL,E,E,E,E],    // 3 ear cups + eyes
+  [E,E,E,E,HL,HS,B,B,B,B,B,B,B,B,HS,HL,E,E,E,E],    // 4 ear cups lower
+  [E,E,E,E,E,E,B,B,B,B,B,B,B,B,E,E,E,E,E,E],        // 5 head bottom
+  [E,E,E,B,B,B,B,B,B,B,B,B,B,B,B,B,B,E,E,E],// 6 wide body (arms)
+  [E,E,E,B,B,B,B,B,B,B,B,B,B,B,B,B,B,E,E,E],// 7 wide body
+  [E,E,E,B,E,B,B,B,B,B,B,B,B,B,B,B,E,B,E,E],// 8 arm nubs
+  [E,E,E,E,E,B,B,B,B,B,B,B,B,B,B,B,E,E,E,E],// 9 lower body
+  [E,E,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,E,E],//10 table top
+  [E,E,T,K,G,K,G,K,G,K,G,K,G,K,G,K,G,T,E,E],//11 keys row 1
+  [E,E,T,K,G,K,G,K,G,K,G,K,G,K,G,K,G,T,E,E],//12 keys row 2
+  [E,E,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,E,E],//13 table body
+  [E,E,T,E,E,E,E,E,E,E,E,E,E,E,E,E,E,T,E,E],//14 table legs
+  [E,E,T,E,E,E,E,E,E,E,E,E,E,E,E,E,E,T,E,E],//15 table legs
+  [E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E],//16
+  [E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E],//17
+  [E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E],//18
+  [E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E,E],//19
+];
+
+// Table rows snapshot for restoration
+const TABLE_ROWS=BASE.slice(10).map(r=>r.slice());
+
+// Head bob: shift rows 0-9 up 1, keep table fixed
+function bobUp(f){
+  const o=f.map(r=>r.slice());
+  for(let r=0;r<9;r++) o[r]=f[r+1].slice();
+  o[9]=new Array(20).fill(E);
+  for(let r=0;r<TABLE_ROWS.length;r++) o[r+10]=TABLE_ROWS[r].slice();
+  return o;
+}
+
+// Key press: darken specific keyboard columns
+function pressKeys(f,cols){
+  const o=f.map(r=>r.slice());
+  cols.forEach(c=>{
+    if(o[11][c]===K)o[11][c]=Y; if(o[12][c]===K)o[12][c]=Y;
+    if(o[11][c]===G)o[11][c]=T; if(o[12][c]===G)o[12][c]=T;
+  });
+  return o;
+}
+
+// Arm tap: extend arm down to table (arms at row 8, col 3 and 17)
+const TAP_L = pt(BASE,[[9,3,B],[9,4,B]]);  // left arm taps
+const TAP_R = pt(BASE,[[9,16,B],[9,17,B]]); // right arm taps
+
+// Beat frames: bob up + key presses + arm tap
+const BOB = bobUp(BASE);
+const BEAT_L = pressKeys(bobUp(TAP_L), [3,5,7,9]);   // left keys
+const BEAT_R = pressKeys(bobUp(TAP_R), [9,11,13,15]); // right keys
+const BEAT_ALL = pressKeys(bobUp(BASE), [3,7,11,15]);  // every other
+
+// Background particle clusters (in empty bg zones)
+const TL=[[0,0],[0,1],[1,0],[1,1]];
+const TR=[[0,18],[0,19],[1,18],[1,19]];
+const ML=[[6,0],[7,0],[8,0]];
+const MR=[[6,19],[7,19],[8,19]];
+const BL=[[16,1],[17,2],[17,3]];
+const BR=[[16,18],[17,17],[17,16]];
+
+// Staggered particle sets for animation variety
+const P1=[...TL,...TR];
+const P2=[...TL,...MR,...BL];
+const P3=[...TR,...ML,...BR];
+const P4=[...TL,...TR,...ML,...MR];
+
+// Music note pixels (float up from top)
+const N1=[[1,0,W],[2,0,W],[2,1,W]];
+const N2=[[0,0,W],[1,0,W],[1,1,W]];
+
+const FRAMES=[
+  {hold:200, frame:px(BASE,P1)},
+  {hold:100, frame:px(BEAT_L,P1)},          // beat 1 — left keys
+  {hold:80,  frame:pt(px(BOB,P2),N1)},       // bob up + note
+  {hold:100, frame:px(BEAT_R,[...P2,...MR])}, // beat 2 — right keys
+  {hold:80,  frame:px(BOB,P3)},
+  {hold:100, frame:px(BEAT_L,P3)},
+  {hold:80,  frame:pt(px(BOB,[...P3,...ML]),N2)}, // note 2
+  {hold:100, frame:px(BEAT_ALL,P4)},         // all keys big beat
+  {hold:80,  frame:px(BOB,P4)},
+  {hold:100, frame:px(BEAT_R,[...P1,...BR])},
+  {hold:80,  frame:pt(px(BASE,P2),N1)},      // settle + note
+  {hold:160, frame:px(BASE,[...P1,...BR])},
+  {hold:100, frame:px(BEAT_L,[...P2,...TL])},
+  {hold:80,  frame:px(BOB,[...P1,...MR])},
+  {hold:100, frame:px(BEAT_R,P3)},
+  {hold:100, frame:px(BASE,P1)},
+];
+
+let idx=0,startAt=performance.now();
+function tick(now){
+  if(now-startAt>=FRAMES[idx].hold){idx=(idx+1)%FRAMES.length;startAt=now;paint(FRAMES[idx].frame);}
+  requestAnimationFrame(tick);
+}
+paint(FRAMES[0].frame);
+requestAnimationFrame(tick);
+
+window.STANDALONE = true;
+window.FRAMES = FRAMES;
+window.PAL = PAL;
+</script>
+</body>
+</html>

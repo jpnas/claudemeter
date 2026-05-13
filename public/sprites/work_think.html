@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>work_think</title>
+<style>
+  html, body { margin: 0; background: #0f0f0f; height: 100%; font-family: "JetBrains Mono", monospace; }
+  .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 8%; box-sizing: border-box; }
+  .grid { width: 100%; max-width: 520px; }
+</style>
+</head>
+<body>
+  <div class="stage"><div id="grid" class="grid"></div></div>
+  <script src="creature-engine.js"></script>
+  <script>
+    const { BODY, EYE, CREATURE, patch, shift } = window.PixelEngine;
+
+    // Eyes look up — remove normal eyes, add small eyes at row 5
+    const EYES_UP = patch(CREATURE, [
+      [6,7,BODY],[7,7,BODY],[6,13,BODY],[7,13,BODY],
+      [5,7,EYE],[5,13,EYE],
+    ]);
+
+    // Chin-rest pose — left arm extends toward chin area (row 9-10, cols 2-4)
+    const CHIN = patch(EYES_UP, [
+      [9,2,BODY],[9,3,BODY],[9,4,BODY],  // left arm reaches across
+      [10,3,BODY],[10,4,BODY],
+    ]);
+
+    // Eyebrow furrow hint on chin-rest
+    const CHIN_BROW = patch(CHIN, [
+      [4,7,BODY],[4,12,BODY],            // slight brow pixels
+    ]);
+
+    // Thought particles — small dots drifting up-right from top of head
+    const T1 = patch(CHIN, [[3,16,BODY]]);
+    const T2 = patch(CHIN, [[2,17,BODY],[3,16,BODY]]);
+    const T3 = patch(CHIN, [[1,17,BODY],[2,17,BODY],[3,16,BODY]]);
+    const T4 = patch(CHIN, [[1,18,BODY],[2,17,BODY]]);
+    const T5 = patch(CHIN, [[0,18,BODY],[1,18,BODY]]);
+
+    // Idea spark — brief bright moment: extra pixels cluster
+    const SPARK1 = patch(CHIN, [
+      [2,15,BODY],[1,16,BODY],[0,17,BODY],
+      [2,17,BODY],[1,18,BODY],
+    ]);
+    const SPARK2 = patch(CHIN, [
+      [1,14,BODY],[0,15,BODY],[0,16,BODY],[0,17,BODY],[0,18,BODY],
+      [1,18,BODY],[2,17,BODY],
+    ]);
+    const SPARK_FADE = patch(CHIN, [
+      [0,16,BODY],[1,17,BODY],
+    ]);
+
+    // Eyes widen on idea spark
+    const EYES_WIDE_UP = patch(SPARK2, [
+      [5,7,BODY],[5,13,BODY],             // clear small eyes
+      [5,6,EYE],[5,7,EYE],[5,8,EYE],     // wide eyes still looking up
+      [5,12,EYE],[5,13,EYE],[5,14,EYE],
+    ]);
+
+    const PRESET = {
+      name: "work think",
+      category: "Work",
+      description: "Deep in thought, chin rest, eyes up, thought particles drift, idea spark flashes.",
+      frames: [
+        // settle into thinking pose
+        { hold: 400,  frame: null },
+        { hold: 300,  frame: EYES_UP },
+        { hold: 300,  frame: CHIN },
+        { hold: 200,  frame: CHIN_BROW },
+        // thought particles emerge
+        { hold: 350,  frame: CHIN },
+        { hold: 350,  frame: T1 },
+        { hold: 350,  frame: T2 },
+        { hold: 350,  frame: T3 },
+        { hold: 350,  frame: T4 },
+        { hold: 350,  frame: T5 },
+        // long contemplation
+        { hold: 600,  frame: CHIN },
+        { hold: 200,  frame: CHIN_BROW },
+        { hold: 400,  frame: CHIN },
+        // second particle trail
+        { hold: 300,  frame: T1 },
+        { hold: 300,  frame: T2 },
+        { hold: 300,  frame: T3 },
+        // IDEA SPARK
+        { hold: 80,   frame: SPARK1 },
+        { hold: 100,  frame: SPARK2 },
+        { hold: 80,   frame: EYES_WIDE_UP },
+        { hold: 120,  frame: SPARK1 },
+        { hold: 150,  frame: SPARK_FADE },
+        // settle back
+        { hold: 300,  frame: CHIN },
+        { hold: 300,  frame: EYES_UP },
+        { hold: 400,  frame: null },
+      ],
+    };
+
+    window.PRESET = PRESET;
+    window.PixelEngine.mount(document.getElementById('grid'), { preset: PRESET });
+  </script>
+</body>
+</html>

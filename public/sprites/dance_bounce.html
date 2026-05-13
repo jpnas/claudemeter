@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>dance_bounce</title>
+<style>
+  html, body { margin: 0; background: #0f0f0f; height: 100%; font-family: "JetBrains Mono", monospace; }
+  .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 8%; box-sizing: border-box; }
+  .grid { width: 100%; max-width: 520px; }
+</style>
+</head>
+<body>
+  <div class="stage"><div id="grid" class="grid"></div></div>
+  <script src="creature-engine.js"></script>
+  <script>
+    const { BODY, EYE, CREATURE, patch, shift } = window.PixelEngine;
+
+    // CROUCH — squash down: body shifts down 1, arms widen for momentum
+    const CROUCH = patch(shift(CREATURE, 1, 0), [
+      [9,2,BODY],[10,2,BODY],   // left arm extends out
+      [9,18,BODY],[10,18,BODY], // right arm extends out
+    ]);
+
+    // LAUNCH — body up 1, arms start rising
+    const UP1 = shift(CREATURE, -1, 0);
+
+    // PEAK — body up 2, arms fully out for airborne pose
+    const UP2 = patch(shift(CREATURE, -2, 0), [
+      [7,1,BODY],[8,1,BODY],[8,2,BODY],  // left arm wide
+      [7,18,BODY],[8,18,BODY],[8,19,BODY], // right arm wide (col 19 = edge)
+    ]);
+
+    // DESCEND — body up 1 again
+    const DOWN1 = shift(CREATURE, -1, 0);
+
+    // LAND — back to base with impact squash: widen slightly + dust
+    const LAND = patch(CREATURE, [
+      [17,4,BODY],[17,5,BODY],   // left dust
+      [17,15,BODY],[17,16,BODY], // right dust
+    ]);
+
+    // IMPACT — heavier squash: shift down 1 + dust
+    const IMPACT = patch(shift(CREATURE, 1, 0), [
+      [18,3,BODY],[18,4,BODY],[18,5,BODY],   // left dust cloud
+      [18,15,BODY],[18,16,BODY],[18,17,BODY], // right dust cloud
+    ]);
+
+    // RECOVER — dust settling, body back to normal
+    const RECOVER = patch(CREATURE, [
+      [18,4,BODY],[18,16,BODY], // faint dust remains
+    ]);
+
+    const PRESET = {
+      name: "dance bounce",
+      category: "Dance",
+      description: "Energetic bounce, crouch, launch, arms wide at peak, squash on landing with dust.",
+      frames: [
+        // beat 1
+        { hold: 100,  frame: CROUCH },   // crouch / anticipation
+        { hold: 80,   frame: UP1 },      // launch
+        { hold: 140,  frame: UP2 },      // peak — arms out
+        { hold: 100,  frame: DOWN1 },    // descend
+        { hold: 60,   frame: LAND },     // land + dust burst
+        { hold: 80,   frame: IMPACT },   // squash on impact
+        { hold: 120,  frame: RECOVER },  // recover / dust settles
+        { hold: 80,   frame: null },     // neutral beat
+        // beat 2 (mirror — arms vary)
+        { hold: 100,  frame: CROUCH },
+        { hold: 80,   frame: UP1 },
+        { hold: 160,  frame: UP2 },
+        { hold: 80,   frame: DOWN1 },
+        { hold: 60,   frame: LAND },
+        { hold: 80,   frame: IMPACT },
+        { hold: 120,  frame: RECOVER },
+        { hold: 100,  frame: null },
+      ],
+    };
+
+    window.PRESET = PRESET;
+    window.PixelEngine.mount(document.getElementById('grid'), { preset: PRESET });
+  </script>
+</body>
+</html>

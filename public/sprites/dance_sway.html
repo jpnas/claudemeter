@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>dance_sway</title>
+<style>
+  html, body { margin: 0; background: #0f0f0f; height: 100%; font-family: "JetBrains Mono", monospace; }
+  .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 8%; box-sizing: border-box; }
+  .grid { width: 100%; max-width: 520px; }
+</style>
+</head>
+<body>
+  <div class="stage"><div id="grid" class="grid"></div></div>
+  <script src="creature-engine.js"></script>
+  <script>
+    const { BODY, EYE, CREATURE, patch, shift } = window.PixelEngine;
+
+    // Sway arc: movement is diagonal (up on the way out, level at peak, down on return)
+    const L1 = shift(CREATURE, -1, -1);  // rising left
+    const L2 = shift(CREATURE,  0, -2);  // peak left
+    const L1b= shift(CREATURE,  0, -1);  // returning left (level)
+    const R1 = shift(CREATURE, -1,  1);  // rising right
+    const R2 = shift(CREATURE,  0,  2);  // peak right
+    const R1b= shift(CREATURE,  0,  1);  // returning right (level)
+
+    // Music note pixels — top-right area, two notes staggered
+    const NOTE_A = patch(CREATURE, [
+      [1,17,BODY],[2,17,BODY],[2,18,BODY], // ♪ shape
+    ]);
+    const NOTE_B = patch(CREATURE, [
+      [0,15,BODY],[1,15,BODY],[1,16,BODY], // ♪ higher
+      [1,18,BODY],[2,18,BODY],[2,19,BODY],
+    ]);
+    const NOTE_C = patch(CREATURE, [
+      [0,14,BODY],[0,15,BODY],[1,15,BODY], // fading higher
+    ]);
+
+    // Add notes to sway frames for rhythm feel
+    const L2_NOTE = patch(L2, [[1,15,BODY],[2,15,BODY],[2,16,BODY]]);
+    const R2_NOTE = patch(R2, [[1,17,BODY],[2,17,BODY],[2,18,BODY]]);
+
+    const PRESET = {
+      name: "dance sway",
+      category: "Dance",
+      description: "Chill lo-fi sway with arcing body movement, floating music notes, relaxed groove.",
+      frames: [
+        // center rest
+        { hold: 240,  frame: null },
+        { hold: 180,  frame: NOTE_A },    // note floats up
+        // sway left arc
+        { hold: 200,  frame: L1 },        // rise left
+        { hold: 240,  frame: L2_NOTE },   // peak left + note
+        { hold: 200,  frame: L1b },       // level return
+        // center
+        { hold: 160,  frame: null },
+        { hold: 180,  frame: NOTE_B },    // two notes
+        // sway right arc
+        { hold: 200,  frame: R1 },        // rise right
+        { hold: 240,  frame: R2_NOTE },   // peak right + note
+        { hold: 200,  frame: R1b },       // level return
+        // center with fading note
+        { hold: 200,  frame: NOTE_C },
+        { hold: 180,  frame: null },
+      ],
+    };
+
+    window.PRESET = PRESET;
+    window.PixelEngine.mount(document.getElementById('grid'), { preset: PRESET });
+  </script>
+</body>
+</html>
