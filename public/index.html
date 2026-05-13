@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=800, height=480, user-scalable=no">
   <title>Claude Usage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -19,14 +19,14 @@
 
     body {
       background: #000;
-      color: #fff;
-      font-family: 'Courier New', Courier, monospace;
+      color: #faf9f5;
+      font-family: 'DM Sans', system-ui, sans-serif;
       width: 800px;
       height: 480px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 14px 20px 10px;
+      padding: 16px 22px 12px;
       gap: 10px;
       flex-shrink: 0;
     }
@@ -36,23 +36,23 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
-      height: 52px;
-      gap: 16px;
+      height: 54px;
+      gap: 18px;
     }
 
-    .robot {
-      width: 44px;
-      height: 44px;
+    .logo {
+      width: 48px;
+      height: 48px;
       flex-shrink: 0;
       image-rendering: pixelated;
     }
 
     .title {
-      font-family: 'Righteous', cursive;
-      font-size: 38px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 40px;
       font-weight: 400;
-      letter-spacing: 1px;
-      color: #fff;
+      letter-spacing: 0.5px;
+      color: #faf9f5;
     }
 
     /* ── Cards ── */
@@ -65,13 +65,13 @@
     }
 
     .card {
-      background: #150e20;
-      border-radius: 12px;
+      background: #1f1f1e;
+      border-radius: 10px;
       padding: 12px 18px 14px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
       min-height: 0;
     }
 
@@ -82,24 +82,26 @@
     }
 
     .pct {
-      font-size: 56px;
-      font-weight: bold;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 58px;
+      font-weight: 400;
       line-height: 1;
+      color: #faf9f5;
     }
 
     .badge {
-      background: #5b21b6;
+      background: #3d2060;
       border-radius: 20px;
       padding: 5px 20px;
-      font-size: 14px;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      color: #faf9f5;
     }
 
     /* ── Progress bars ── */
     .progress-track {
-      background: #3d1a58;
+      background: #2a2a28;
       border-radius: 6px;
       height: 14px;
       overflow: hidden;
@@ -110,12 +112,14 @@
       height: 100%;
       border-radius: 6px;
       width: 0%;
-      transition: width 0.6s ease, background-color 0.6s ease;
+      transition: width 0.7s ease, background-color 0.7s ease;
     }
 
     .countdown {
-      font-size: 15px;
-      opacity: 0.9;
+      font-size: 14px;
+      font-weight: 300;
+      color: #b0aea5;
+      letter-spacing: 0.2px;
     }
 
     /* ── Sub-bars (Opus / Sonnet) ── */
@@ -135,12 +139,12 @@
     .sub-bar-label {
       font-size: 11px;
       width: 48px;
-      opacity: 0.65;
+      color: #b0aea5;
       flex-shrink: 0;
     }
 
     .sub-bar-track {
-      background: #3d1a58;
+      background: #2a2a28;
       border-radius: 4px;
       height: 8px;
       flex: 1;
@@ -151,58 +155,44 @@
       height: 100%;
       border-radius: 4px;
       width: 0%;
-      transition: width 0.6s ease;
+      transition: width 0.7s ease;
     }
 
     .sub-bar-pct {
       font-size: 11px;
       width: 34px;
       text-align: right;
-      opacity: 0.65;
+      color: #b0aea5;
       flex-shrink: 0;
     }
 
     /* ── Status bar ── */
     .status-bar {
       flex-shrink: 0;
-      height: 28px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .status-text {
-      color: #f97316;
-      font-size: 14px;
+      color: #d97757;
+      font-size: 13px;
+      font-weight: 400;
       letter-spacing: 2px;
       animation: pulse 2s ease-in-out infinite;
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50%       { opacity: 0.25; }
+      50%       { opacity: 0.3; }
     }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <!-- 8×8 pixel art robot, orange/red, matching reference image -->
-    <svg class="robot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8">
-      <g fill="#e8612a">
-        <rect x="2" y="0" width="4" height="1"/>
-        <rect x="1" y="1" width="6" height="1"/>
-        <rect x="1" y="2" width="1" height="2"/>
-        <rect x="3" y="2" width="2" height="2"/>
-        <rect x="6" y="2" width="1" height="2"/>
-        <rect x="1" y="4" width="6" height="1"/>
-        <rect x="0" y="5" width="1" height="2"/>
-        <rect x="2" y="5" width="4" height="2"/>
-        <rect x="7" y="5" width="1" height="2"/>
-        <rect x="2" y="7" width="1" height="1"/>
-        <rect x="5" y="7" width="1" height="1"/>
-      </g>
-    </svg>
+    <img class="logo" src="/logo.png" alt="Claude">
     <span class="title">Usage</span>
   </div>
 
@@ -249,18 +239,38 @@
   </div>
 
   <div class="status-bar">
-    <span class="status-text">* Active</span>
+    <span class="status-text" id="status-text">* Active</span>
   </div>
 
   <script>
     'use strict';
 
+    /* ── Status text cycling (from Clawdmeter phrase pool) ── */
+    const STATUS_PHRASES = [
+      'Baking', 'Brewing', 'Clauding', 'Crafting', 'Coding',
+      'Debugging', 'Deliberating', 'Designing', 'Drafting',
+      'Editing', 'Engineering', 'Exploring', 'Fetching',
+      'Finalizing', 'Finishing', 'Focusing', 'Formulating',
+      'Generating', 'Glowing', 'Grooving', 'Hashing',
+      'Hatching', 'Healing', 'Iterating', 'Musing',
+      'Pondering', 'Processing', 'Reasoning', 'Rendering',
+      'Scheming', 'Synthesizing', 'Thinking', 'Vibing',
+      'Wandering', 'Weaving', 'Working'
+    ];
+    let phraseIdx = Math.floor(Math.random() * STATUS_PHRASES.length);
+    function cycleStatus() {
+      phraseIdx = (phraseIdx + 1) % STATUS_PHRASES.length;
+      document.getElementById('status-text').textContent =
+        '* ' + STATUS_PHRASES[phraseIdx] + '...';
+    }
+    setInterval(cycleStatus, 4000);
+    cycleStatus();
+
+    /* ── Usage data ── */
     let usageData = null;
 
     function getColor(pct) {
-      if (pct < 50) return '#22c55e';
-      if (pct <= 80) return '#eab308';
-      return '#ef4444';
+      return pct < 50 ? '#788c5d' : '#d97757';
     }
 
     function formatCountdown(isoString) {
@@ -282,8 +292,7 @@
       document.getElementById(fillId).style.width      = pct + '%';
       document.getElementById(fillId).style.background = color;
       if (pctId) {
-        document.getElementById(pctId).textContent   = pct + '%';
-        document.getElementById(pctId).style.color   = color;
+        document.getElementById(pctId).textContent = pct + '%';
       }
     }
 
@@ -302,7 +311,7 @@
       document.getElementById('opus-row').style.display   = hasOpus   ? 'flex' : 'none';
       document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex' : 'none';
 
-      if (hasOpus)   applyBar('opus-fill',   'opus-pct',   data.seven_day_opus.utilization);
+      if (hasOpus)   applyBar('opus-fill', 'opus-pct',    data.seven_day_opus.utilization);
       if (hasSonnet) applyBar('sonnet-fill', 'sonnet-pct', data.seven_day_sonnet.utilization);
 
       tick();
