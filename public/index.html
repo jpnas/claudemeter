@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=800, height=480, user-scalable=no">
   <title>Claude Usage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html {
-      background: #0d0d0d;
+      background: #000;
       min-height: 100%;
       display: flex;
       align-items: center;
@@ -16,7 +18,7 @@
     }
 
     body {
-      background: #0d0d0d;
+      background: #000;
       color: #fff;
       font-family: 'Courier New', Courier, monospace;
       width: 800px;
@@ -24,8 +26,8 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 12px 20px 8px;
-      gap: 8px;
+      padding: 14px 20px 10px;
+      gap: 10px;
       flex-shrink: 0;
     }
 
@@ -33,31 +35,43 @@
     .header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       flex-shrink: 0;
-      height: 50px;
+      height: 52px;
+      gap: 16px;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .robot { font-size: 30px; line-height: 1; }
-    .title { font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+
+    .robot {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+    }
+
+    .title {
+      font-family: 'Righteous', cursive;
+      font-size: 38px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      color: #fff;
+    }
 
     /* ── Cards ── */
     .cards {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       flex: 1;
       min-height: 0;
     }
 
     .card {
-      background: #1a1a1a;
-      border-radius: 10px;
-      padding: 10px 16px 12px;
+      background: #150e20;
+      border-radius: 12px;
+      padding: 12px 18px 14px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       min-height: 0;
     }
 
@@ -68,7 +82,7 @@
     }
 
     .pct {
-      font-size: 50px;
+      font-size: 56px;
       font-weight: bold;
       line-height: 1;
     }
@@ -76,15 +90,16 @@
     .badge {
       background: #5b21b6;
       border-radius: 20px;
-      padding: 4px 16px;
+      padding: 5px 20px;
       font-size: 14px;
       font-weight: bold;
       letter-spacing: 0.5px;
+      color: #fff;
     }
 
     /* ── Progress bars ── */
     .progress-track {
-      background: #2a2a2a;
+      background: #3d1a58;
       border-radius: 6px;
       height: 14px;
       overflow: hidden;
@@ -100,7 +115,7 @@
 
     .countdown {
       font-size: 15px;
-      opacity: 0.80;
+      opacity: 0.9;
     }
 
     /* ── Sub-bars (Opus / Sonnet) ── */
@@ -125,7 +140,7 @@
     }
 
     .sub-bar-track {
-      background: #2a2a2a;
+      background: #3d1a58;
       border-radius: 4px;
       height: 8px;
       flex: 1;
@@ -150,15 +165,16 @@
     /* ── Status bar ── */
     .status-bar {
       flex-shrink: 0;
-      height: 26px;
+      height: 28px;
       display: flex;
       align-items: center;
+      justify-content: center;
     }
 
     .status-text {
       color: #f97316;
-      font-size: 13px;
-      letter-spacing: 1px;
+      font-size: 14px;
+      letter-spacing: 2px;
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -171,10 +187,23 @@
 <body>
 
   <div class="header">
-    <div class="header-left">
-      <span class="robot">🤖</span>
-      <span class="title">Claude Usage</span>
-    </div>
+    <!-- 8×8 pixel art robot, orange/red, matching reference image -->
+    <svg class="robot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8">
+      <g fill="#e8612a">
+        <rect x="2" y="0" width="4" height="1"/>
+        <rect x="1" y="1" width="6" height="1"/>
+        <rect x="1" y="2" width="1" height="2"/>
+        <rect x="3" y="2" width="2" height="2"/>
+        <rect x="6" y="2" width="1" height="2"/>
+        <rect x="1" y="4" width="6" height="1"/>
+        <rect x="0" y="5" width="1" height="2"/>
+        <rect x="2" y="5" width="4" height="2"/>
+        <rect x="7" y="5" width="1" height="2"/>
+        <rect x="2" y="7" width="1" height="1"/>
+        <rect x="5" y="7" width="1" height="1"/>
+      </g>
+    </svg>
+    <span class="title">Usage</span>
   </div>
 
   <div class="cards">
@@ -269,9 +298,9 @@
       const hasSonnet = data.seven_day_sonnet !== null;
       const hasAny    = hasOpus || hasSonnet;
 
-      document.getElementById('sub-bars').style.display   = hasAny ? 'flex'  : 'none';
-      document.getElementById('opus-row').style.display   = hasOpus   ? 'flex'  : 'none';
-      document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex'  : 'none';
+      document.getElementById('sub-bars').style.display   = hasAny    ? 'flex' : 'none';
+      document.getElementById('opus-row').style.display   = hasOpus   ? 'flex' : 'none';
+      document.getElementById('sonnet-row').style.display = hasSonnet ? 'flex' : 'none';
 
       if (hasOpus)   applyBar('opus-fill',   'opus-pct',   data.seven_day_opus.utilization);
       if (hasSonnet) applyBar('sonnet-fill', 'sonnet-pct', data.seven_day_sonnet.utilization);
