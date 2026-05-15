@@ -6,15 +6,20 @@ const os = require('os');
 const path = require('path');
 
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
+const TOKEN_FILE       = process.env.TOKEN_FILE;
 const PORT = Number(process.env.PORT) || 3333;
 const POLL_INTERVAL_MS = 30_000;
 
 let cachedUsage = null;
 
 // Token resolution order:
-// 1. OAUTH_TOKEN env var (direct token string — useful on macOS where credentials are in Keychain)
-// 2. CREDENTIALS_PATH file with { claudeAiOauth: { accessToken: "..." } } structure
+// 1. TOKEN_FILE env var — path to a file containing the raw token string.
+//    Written by the platform-specific refresh script; re-read every poll so
+//    token updates are picked up without restarting the server.
+// 2. OAUTH_TOKEN env var — direct token string (static; requires restart to refresh).
+// 3. CREDENTIALS_PATH — JSON file with { claudeAiOauth: { accessToken } }.
 function readToken() {
+  if (TOKEN_FILE) return fs.readFileSync(TOKEN_FILE.replace(/^~/, os.homedir()), 'utf8').trim();
   if (process.env.OAUTH_TOKEN) return process.env.OAUTH_TOKEN;
   const resolved = CREDENTIALS_PATH.replace(/^~/, os.homedir());
   const raw = fs.readFileSync(resolved, 'utf8');
