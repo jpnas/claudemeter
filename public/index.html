@@ -186,6 +186,106 @@
         flex-shrink: 0;
       }
 
+      /* ── Error panel ── */
+      #error-panel {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        padding: 20px 8px;
+        position: relative;
+        overflow: hidden;
+        gap: 10px;
+      }
+
+      #error-panel.visible {
+        display: flex;
+      }
+
+      #error-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          180deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(255, 255, 255, 0.012) 3px,
+          rgba(255, 255, 255, 0.012) 4px
+        );
+        pointer-events: none;
+      }
+
+      .err-row {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        font-family: "DM Mono", "Courier New", monospace;
+      }
+
+      .err-tag {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        width: 42px;
+        text-align: right;
+      }
+
+      .err-tag-err {
+        color: #c0392b;
+      }
+      .err-tag-dim {
+        color: #3a3935;
+      }
+      .err-tag-wait {
+        color: #d97757;
+      }
+
+      .err-msg {
+        font-size: 15px;
+        color: #faf9f5;
+        letter-spacing: 0.2px;
+      }
+
+      .err-hint {
+        font-size: 12px;
+        color: #4a4945;
+        letter-spacing: 0.2px;
+      }
+
+      .err-retry {
+        font-size: 14px;
+        color: #7a7970;
+        letter-spacing: 0.5px;
+      }
+
+      .err-retry em {
+        font-style: normal;
+        color: #b0aea5;
+      }
+
+      @keyframes err-blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .err-cursor {
+        display: inline-block;
+        width: 6px;
+        height: 13px;
+        background: #d97757;
+        vertical-align: text-bottom;
+        margin-left: 3px;
+        animation: err-blink 1s step-end infinite;
+      }
+
       /* ── Status bar — font_mono_32, COL_ACCENT ── */
       .status-bar {
         height: 28px;
@@ -216,7 +316,7 @@
     </div>
 
     <div class="cards">
-      <div class="card">
+      <div class="card" id="current-card">
         <div class="card-header">
           <span class="pct" id="current-pct">--%</span>
           <span class="badge">Current</span>
@@ -227,7 +327,7 @@
         <div class="countdown" id="current-countdown">---</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="weekly-card">
         <div class="card-header">
           <span class="pct" id="weekly-pct">--%</span>
           <span class="badge">Weekly</span>
@@ -251,6 +351,25 @@
             </div>
             <span class="sub-bar-pct" id="sonnet-pct"></span>
           </div>
+        </div>
+      </div>
+
+      <div id="error-panel">
+        <div class="err-row">
+          <span class="err-tag err-tag-err">err</span>
+          <span class="err-msg" id="err-msg">—</span>
+        </div>
+        <div class="err-row" id="err-hint-row">
+          <span class="err-tag err-tag-dim">—</span>
+          <span class="err-hint" id="err-hint"></span>
+        </div>
+        <div class="err-row" style="margin-top: 6px">
+          <span class="err-tag err-tag-wait">wait</span>
+          <span class="err-retry"
+            >retrying in <em id="err-countdown">30</em>s<span
+              class="err-cursor"
+            ></span
+          ></span>
         </div>
       </div>
 
@@ -280,8 +399,10 @@
         "work_think.html",
       ];
       let spriteIdx = Math.floor(Math.random() * SPRITES.length);
+      let spritesPaused = false;
 
       function nextSprite() {
+        if (spritesPaused) return;
         spriteIdx = (spriteIdx + 1) % SPRITES.length;
         document.getElementById("sprite").src =
           SPRITE_BASE + SPRITES[spriteIdx];
@@ -498,7 +619,9 @@
 
         if (now - lastPhrase >= 4000) {
           let next;
-          do { next = Math.floor(Math.random() * PHRASES.length); } while (next === phraseIdx);
+          do {
+            next = Math.floor(Math.random() * PHRASES.length);
+          } while (next === phraseIdx);
           phraseIdx = next;
           lastPhrase = now;
         }
@@ -512,12 +635,20 @@
               : SPINNER_PHASES - spinnerPhase;
         }
 
+        if (fetchError) return;
+        if (isMaxed) {
+          document.getElementById("status-text").textContent =
+            "limit reached. claude is napping…";
+          return;
+        }
         document.getElementById("status-text").textContent =
           SPINNER_FRAMES[spinnerIdx] + " " + PHRASES[phraseIdx] + "…";
       }
 
       /* ── Usage rendering ── */
       let usageData = null;
+      let fetchError = false;
+      let retryTimer = null;
 
       // Matches pct_color() in ui.cpp exactly
       function getColor(pct) {
@@ -546,6 +677,21 @@
         document.getElementById(fillId).style.background = color;
         if (pctId) {
           document.getElementById(pctId).textContent = pct + "%";
+        }
+      }
+
+      let isMaxed = false;
+
+      function updateMaxedSprite(maxed) {
+        if (maxed === isMaxed) return;
+        isMaxed = maxed;
+        if (maxed) {
+          spritesPaused = true;
+          document.getElementById("sprite").src = SPRITE_BASE + "maxed.html";
+        } else {
+          spritesPaused = false;
+          document.getElementById("sprite").src =
+            SPRITE_BASE + SPRITES[spriteIdx];
         }
       }
 
@@ -584,6 +730,13 @@
             data.seven_day_sonnet.utilization,
           );
 
+        const maxed =
+          data.five_hour.utilization >= 100 ||
+          data.seven_day.utilization >= 100 ||
+          (hasOpus && data.seven_day_opus.utilization >= 100) ||
+          (hasSonnet && data.seven_day_sonnet.utilization >= 100);
+        updateMaxedSprite(maxed);
+
         tickTime();
       }
 
@@ -595,13 +748,67 @@
           formatCountdown(usageData.seven_day.resets_at);
       }
 
+      function renderError(msg, hint) {
+        fetchError = true;
+        spritesPaused = true;
+        document.getElementById("sprite").src =
+          SPRITE_BASE + "error.html";
+
+        document.getElementById("current-card").style.display = "none";
+        document.getElementById("weekly-card").style.display = "none";
+        document.getElementById("error-panel").classList.add("visible");
+        document.getElementById("status-text").textContent = "";
+
+        document.getElementById("err-msg").textContent = msg;
+
+        const hintRow = document.getElementById("err-hint-row");
+        if (hint) {
+          document.getElementById("err-hint").textContent = hint;
+          hintRow.style.display = "flex";
+        } else {
+          hintRow.style.display = "none";
+        }
+
+        if (retryTimer) clearInterval(retryTimer);
+        let countdown = 30;
+        document.getElementById("err-countdown").textContent = countdown;
+        retryTimer = setInterval(() => {
+          countdown = Math.max(0, countdown - 1);
+          document.getElementById("err-countdown").textContent = countdown;
+          if (countdown === 0) clearInterval(retryTimer);
+        }, 1000);
+      }
+
+      function renderOk() {
+        if (!fetchError) return;
+        fetchError = false;
+        spritesPaused = false;
+        document.getElementById("sprite").src =
+          SPRITE_BASE + SPRITES[spriteIdx];
+        document.getElementById("current-card").style.display = "";
+        document.getElementById("weekly-card").style.display = "";
+        document.getElementById("error-panel").classList.remove("visible");
+        document.getElementById("status-text").style.color = "#d97757";
+        if (retryTimer) clearInterval(retryTimer);
+      }
+
       async function fetchAndRender() {
         try {
           const res = await fetch("/usage");
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            renderError(
+              body.message || `HTTP ${res.status}`,
+              body.hint || null,
+            );
+            return;
+          }
           const data = await res.json();
+          renderOk();
           render(data);
         } catch (e) {
           console.error("Failed to fetch /usage:", e);
+          renderError(e.message || "fetch error", null);
         }
       }
 

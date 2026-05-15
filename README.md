@@ -18,7 +18,7 @@ npm install
 Edite o plist substituindo `REPLACE_WITH_FULL_PATH` pelo caminho absoluto do projeto:
 
 ```bash
-sed -i '' "s|REPLACE_WITH_FULL_PATH|$HOME/claudemeter|g" scripts/com.claudemeter.token-refresh.plist
+sed -i '' "s|/Users/joaopedronascimento|$HOME/claudemeter|g" scripts/com.claudemeter.token-refresh.plist
 ```
 
 Copie para o launchd e ative:
@@ -32,11 +32,29 @@ O script lê o token do Keychain e grava em `~/.claudemeter/token`. Roda uma vez
 
 ### 3. Iniciar o servidor
 
+**Em foreground** (terminal fica preso; `Ctrl+C` para parar):
+
 ```bash
 TOKEN_FILE=~/.claudemeter/token node server.js
 ```
 
+**Em background** (fecha o terminal sem parar o servidor):
+
+```bash
+TOKEN_FILE=~/.claudemeter/token node server.js &
+```
+
 Acesse `http://localhost:3333`.
+
+### Verificar se está rodando / parar
+
+```bash
+# Ver o PID e confirmar o processo
+ps aux | grep "node server.js" | grep -v grep
+
+# Parar
+kill <PID>
+```
 
 ### Remover o launchd job
 
@@ -96,12 +114,12 @@ Acesse `http://localhost:3333`.
 
 ## Variáveis de ambiente
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `TOKEN_FILE` | — | Caminho para arquivo com o token puro. Re-lido a cada poll. |
-| `OAUTH_TOKEN` | — | Token direto como string (estático; exige restart para renovar). |
-| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON com `claudeAiOauth.accessToken`. |
-| `PORT` | `3333` | Porta do servidor. |
+| Variável           | Padrão                       | Descrição                                                        |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------- |
+| `TOKEN_FILE`       | —                            | Caminho para arquivo com o token puro. Re-lido a cada poll.      |
+| `OAUTH_TOKEN`      | —                            | Token direto como string (estático; exige restart para renovar). |
+| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON com `claudeAiOauth.accessToken`.                            |
+| `PORT`             | `3333`                       | Porta do servidor.                                               |
 
 **Ordem de prioridade:** `TOKEN_FILE` → `OAUTH_TOKEN` → `CREDENTIALS_PATH`
 

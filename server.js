@@ -11,13 +11,8 @@ const PORT = Number(process.env.PORT) || 3333;
 const POLL_INTERVAL_MS = 30_000;
 
 let cachedUsage = null;
+let lastError   = null;
 
-// Token resolution order:
-// 1. TOKEN_FILE env var — path to a file containing the raw token string.
-//    Written by the platform-specific refresh script; re-read every poll so
-//    token updates are picked up without restarting the server.
-// 2. OAUTH_TOKEN env var — direct token string (static; requires restart to refresh).
-// 3. CREDENTIALS_PATH — JSON file with { claudeAiOauth: { accessToken } }.
 function readToken() {
   if (TOKEN_FILE) return fs.readFileSync(TOKEN_FILE.replace(/^~/, os.homedir()), 'utf8').trim();
   if (process.env.OAUTH_TOKEN) return process.env.OAUTH_TOKEN;
@@ -28,20 +23,22 @@ function readToken() {
   return creds.claudeAiOauth.accessToken;
 }
 
-function getMockData() {
-  const now = Date.now();
-  return {
-    five_hour: {
-      utilization: 19.0,
-      resets_at: new Date(now + 3 * 60 * 60 * 1000).toISOString()
-    },
-    seven_day: {
-      utilization: 15.0,
-      resets_at: new Date(now + 6 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    seven_day_opus: null,
-    seven_day_sonnet: null
-  };
+function classifyError(err) {
+  if (err.code === 'ENOENT') {
+    const p = (err.path || '').replace(os.homedir(), '~');
+    return { message: 'credentials not found', hint: p };
+  }
+  if (err.message?.includes('accessToken not found')) {
+    return { message: 'accessToken missing', hint: 'check claudeAiOauth.accessToken in credentials file' };
+  }
+  if (err.message?.startsWith('Anthropic API returned')) {
+    const status = err.message.match(/\d{3}/)?.[0];
+    return {
+      message: `API error ${status ?? ''}`.trim(),
+      hint: status === '401' ? 'token may be expired' : err.message,
+    };
+  }
+  return { message: 'fetch failed', hint: err.message };
 }
 
 async function fetchUsage(token) {
@@ -60,9 +57,11 @@ async function poll() {
   try {
     const token = readToken();
     cachedUsage = await fetchUsage(token);
+    lastError = null;
   } catch (err) {
-    console.warn('[MOCK MODE] Could not fetch live data:', err.message);
-    cachedUsage = getMockData();
+    console.error('[ERROR] Could not fetch usage:', err.message);
+    cachedUsage = null;
+    lastError = classifyError(err);
   }
 }
 
@@ -71,7 +70,8 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/usage', (_req, res) => {
-  res.json(cachedUsage ?? getMockData());
+  if (cachedUsage) return res.json(cachedUsage);
+  res.status(503).json({ error: true, ...(lastError ?? { message: 'no data yet' }) });
 });
 
 poll().then(() => {
