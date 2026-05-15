@@ -9,7 +9,6 @@ A lightweight web dashboard that polls the Anthropic Claude Code usage API and d
 ### 1. Instalar dependências
 
 ```bash
-cd ~/claudemeter
 npm install
 ```
 

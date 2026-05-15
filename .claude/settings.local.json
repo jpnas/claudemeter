@@ -38,7 +38,14 @@
       "WebFetch(domain:api.github.com)",
       "Bash(curl -sL \"https://raw.githubusercontent.com/HermannBjorgvin/Clawdmeter/main/assets/Claude%20Code%20Logo.png\" -o /Users/joaopedronascimento/claude-usage/public/logo.png)",
       "Bash(curl *)",
-      "WebFetch(domain:claudepix.vercel.app)"
+      "WebFetch(domain:claudepix.vercel.app)",
+      "Skill(frontend-design:frontend-design)",
+      "Bash(screencapture -x /tmp/claudemeter-screenshot.png)",
+      "Bash(open -a \"Google Chrome\" \"http://localhost:3333\")",
+      "Bash(screencapture -x /tmp/claudemeter-dashboard.png)",
+      "Bash(open \"http://localhost:3333\")",
+      "Bash(osascript -e 'tell application \"Safari\" to activate')",
+      "Bash(osascript)"
     ]
   }
 }

@@ -8,7 +8,7 @@ const path = require('path');
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
 const TOKEN_FILE       = process.env.TOKEN_FILE;
 const PORT = Number(process.env.PORT) || 3333;
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 60_000;
 
 let cachedUsage = null;
 let lastError   = null;
