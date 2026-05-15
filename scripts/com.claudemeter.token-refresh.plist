@@ -9,7 +9,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>REPLACE_WITH_FULL_PATH/scripts/refresh-token-mac.sh</string>
+    <string>/Users/joaopedronascimento/claudemeter/scripts/refresh-token-mac.sh</string>
   </array>
 
   <!-- Run once at load, then every hour -->

@@ -45,7 +45,19 @@
       "Bash(screencapture -x /tmp/claudemeter-dashboard.png)",
       "Bash(open \"http://localhost:3333\")",
       "Bash(osascript -e 'tell application \"Safari\" to activate')",
-      "Bash(osascript)"
+      "Bash(osascript)",
+      "Bash(git push *)",
+      "Skill(superpowers:systematic-debugging)",
+      "Read(//Users/joaopedronascimento/.claudemeter/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(launchctl list *)",
+      "Bash(bash /Users/joaopedronascimento/claudemeter/scripts/refresh-token-mac.sh)",
+      "Bash(cp /Users/joaopedronascimento/claudemeter/scripts/com.claudemeter.token-refresh.plist ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist)",
+      "Bash(launchctl unload *)",
+      "Bash(launchctl load *)",
+      "Bash(git -C /Users/joaopedronascimento/claudemeter status)",
+      "Bash(git -C /Users/joaopedronascimento/claudemeter diff)",
+      "Bash(git *)"
     ]
   }
 }

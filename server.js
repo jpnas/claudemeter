@@ -4,6 +4,7 @@ const express = require('express');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execFile } = require('child_process');
 
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
 const TOKEN_FILE       = process.env.TOKEN_FILE;
@@ -53,12 +54,36 @@ async function fetchUsage(token) {
   return res.json();
 }
 
+function runRefreshScript() {
+  const script = path.join(__dirname, 'scripts/refresh-token-mac.sh');
+  return new Promise((resolve, reject) => {
+    execFile('/bin/bash', [script], (err, _stdout, stderr) => {
+      if (err) reject(new Error(stderr?.trim() || err.message));
+      else resolve();
+    });
+  });
+}
+
 async function poll() {
   try {
     const token = readToken();
     cachedUsage = await fetchUsage(token);
     lastError = null;
   } catch (err) {
+    const is401 = err.message?.includes('401');
+    if (is401 && TOKEN_FILE && process.platform === 'darwin') {
+      console.log('[INFO] Token expired, running refresh script...');
+      try {
+        await runRefreshScript();
+        const token = readToken();
+        cachedUsage = await fetchUsage(token);
+        lastError = null;
+        console.log('[INFO] Token refreshed successfully.');
+        return;
+      } catch (refreshErr) {
+        console.error('[ERROR] Token refresh failed:', refreshErr.message);
+      }
+    }
     console.error('[ERROR] Could not fetch usage:', err.message);
     cachedUsage = null;
     lastError = classifyError(err);

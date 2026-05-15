@@ -14,7 +14,7 @@ RAW=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null
   exit 1
 }
 
-TOKEN=$(python3 -c "import json,sys; d=json.loads(sys.argv[1]); print(d['claudeAiOauth']['accessToken'])" "$RAW") || {
+TOKEN=$(/usr/bin/python3 -c "import json,sys; d=json.loads(sys.argv[1]); print(d['claudeAiOauth']['accessToken'])" "$RAW") || {
   echo "[refresh-token-mac] ERROR: could not parse token from Keychain value" >&2
   exit 1
 }
