@@ -6,58 +6,58 @@ A lightweight web dashboard that polls the Anthropic Claude Code usage API and d
 
 ---
 
-## macOS — sem Docker
+## macOS — without Docker
 
-### 1. Instalar dependências
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configurar renovação automática do token
+### 2. Set up automatic token refresh
 
-Edite o plist substituindo `REPLACE_WITH_FULL_PATH` pelo caminho absoluto do projeto:
+Edit the plist replacing `REPLACE_WITH_FULL_PATH` with the absolute path to the project:
 
 ```bash
 sed -i '' "s|/Users/joaopedronascimento|$HOME/claudemeter|g" scripts/com.claudemeter.token-refresh.plist
 ```
 
-Copie para o launchd e ative:
+Copy to launchd and enable:
 
 ```bash
 cp scripts/com.claudemeter.token-refresh.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
 ```
 
-O script lê o token do Keychain e grava em `~/.claudemeter/token`. Roda uma vez ao carregar e depois a cada hora.
+The script reads the token from Keychain and writes it to `~/.claudemeter/token`. It runs once on load and then every hour.
 
-### 3. Iniciar o servidor
+### 3. Start the server
 
-**Em foreground** (terminal fica preso; `Ctrl+C` para parar):
+**Foreground** (terminal stays attached; `Ctrl+C` to stop):
 
 ```bash
 TOKEN_FILE=~/.claudemeter/token node server.js
 ```
 
-**Em background** (fecha o terminal sem parar o servidor):
+**Background** (close the terminal without stopping the server):
 
 ```bash
 TOKEN_FILE=~/.claudemeter/token node server.js &
 ```
 
-Acesse `http://localhost:3333`.
+Open `http://localhost:3333`.
 
-### Verificar se está rodando / parar
+### Check if running / stop
 
 ```bash
-# Ver o PID e confirmar o processo
+# Show the PID and confirm the process
 ps aux | grep "node server.js" | grep -v grep
 
-# Parar
+# Stop
 kill <PID>
 ```
 
-### Remover o launchd job
+### Remove the launchd job
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
@@ -66,27 +66,27 @@ rm ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
 
 ---
 
-## Windows — com Docker
+## Windows — with Docker
 
-### Pré-requisitos
+### Prerequisites
 
-- Docker Desktop rodando
-- Claude Code rodando em um container Docker
-- Descobrir o nome do container do Claude Code: `docker ps`
+- Docker Desktop running
+- Claude Code running in a Docker container
+- Find the Claude Code container name: `docker ps`
 
-### 1. Configurar renovação automática do token
+### 1. Set up automatic token refresh
 
-Edite `scripts\refresh-token-windows.ps1` e substitua `REPLACE_WITH_CLAUDE_CODE_CONTAINER_NAME` pelo nome real do container.
+Edit `scripts\refresh-token-windows.ps1` and replace `REPLACE_WITH_CLAUDE_CODE_CONTAINER_NAME` with the actual container name.
 
-Execute uma vez para testar:
+Run once to test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\refresh-token-windows.ps1
 ```
 
-Deve criar `%USERPROFILE%\.claudemeter\token`.
+This should create `%USERPROFILE%\.claudemeter\token`.
 
-### 2. Agendar renovação via Task Scheduler
+### 2. Schedule refresh via Task Scheduler
 
 ```powershell
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" `
@@ -95,7 +95,7 @@ $trigger = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Hours 1) 
 Register-ScheduledTask -TaskName "Claudemeter Token Refresh" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-### 3. Build e run
+### 3. Build and run
 
 ```powershell
 docker build -t claudemeter .
@@ -109,17 +109,17 @@ docker run -d `
   claudemeter
 ```
 
-Acesse `http://localhost:3333`.
+Open `http://localhost:3333`.
 
 ---
 
-## Variáveis de ambiente
+## Environment variables
 
-| Variável           | Padrão                       | Descrição                                                        |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------- |
-| `TOKEN_FILE`       | —                            | Caminho para arquivo com o token puro. Re-lido a cada poll.      |
-| `OAUTH_TOKEN`      | —                            | Token direto como string (estático; exige restart para renovar). |
-| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON com `claudeAiOauth.accessToken`.                            |
-| `PORT`             | `3333`                       | Porta do servidor.                                               |
+| Variable           | Default                      | Description                                                         |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------- |
+| `TOKEN_FILE`       | —                            | Path to a file containing the raw token. Re-read on every poll.     |
+| `OAUTH_TOKEN`      | —                            | Token string directly (static; requires restart to refresh).        |
+| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON file with `claudeAiOauth.accessToken`.                         |
+| `PORT`             | `3333`                       | Server port.                                                        |
 
-**Ordem de prioridade:** `TOKEN_FILE` → `OAUTH_TOKEN` → `CREDENTIALS_PATH`
+**Priority order:** `TOKEN_FILE` → `OAUTH_TOKEN` → `CREDENTIALS_PATH`
