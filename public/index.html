@@ -19,7 +19,7 @@
       }
 
       html {
-        background: #0f0f0f;
+        background: #0d0d0d;
         min-height: 100%;
         display: flex;
         align-items: center;
@@ -27,7 +27,6 @@
       }
 
       body {
-        background: #0f0f0f;
         color: #faf9f5;
         font-family: "DM Sans", system-ui, sans-serif;
         width: min(800px, 100%);
@@ -307,13 +306,7 @@
   </head>
   <body>
     <div class="header">
-      <iframe
-        class="logo"
-        id="sprite"
-        src=""
-        title="Claude sprite"
-        scrolling="no"
-      ></iframe>
+      <video class="logo" id="sprite" autoplay loop muted playsinline></video>
       <span class="title">Usage</span>
     </div>
 
@@ -386,32 +379,36 @@
       /* ── Sprites ── */
       const SPRITE_BASE = "/sprites/";
       const SPRITES = [
-        "idle_breathe.html",
-        "idle_blink.html",
-        "idle_look_around.html",
-        "expression_wink.html",
-        "expression_surprise.html",
-        "expression_sleep.html",
-        "dance_bounce.html",
-        "dance_sway.html",
-        "dance_bounce_dj.html",
-        "dance_sway_dj.html",
-        "dance_djmix.html",
-        "work_coding.html",
-        "work_think.html",
+        "idle_breathe.mp4",
+        "idle_blink.mp4",
+        "idle_look_around.mp4",
+        "expression_wink.mp4",
+        "expression_surprise.mp4",
+        "dance_bounce.mp4",
+        "dance_sway.mp4",
+        "dance_bounce_dj.mp4",
+        "dance_sway_dj.mp4",
+        "dance_djmix.mp4",
+        "work_coding.mp4",
+        "work_think.mp4",
       ];
       let spriteIdx = Math.floor(Math.random() * SPRITES.length);
       let spritesPaused = false;
 
+      function setSprite(src) {
+        const el = document.getElementById("sprite");
+        el.src = src;
+        el.load();
+        el.play().catch(() => {});
+      }
+
       function nextSprite() {
         if (spritesPaused) return;
         spriteIdx = (spriteIdx + 1) % SPRITES.length;
-        document.getElementById("sprite").src =
-          SPRITE_BASE + SPRITES[spriteIdx];
+        setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
       }
-
-      document.getElementById("sprite").src = SPRITE_BASE + SPRITES[spriteIdx];
-      setInterval(nextSprite, 8 * 1000);
+      setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
+      setInterval(nextSprite, 15 * 1000);
 
       /* ── Spinner: exact Clawdmeter ping-pong sequence ── */
       const SPINNER_FRAMES = ["·", "✻", "✽", "✶", "✳", "✢"];
@@ -689,11 +686,12 @@
         isMaxed = maxed;
         if (maxed) {
           spritesPaused = true;
-          document.getElementById("sprite").src = SPRITE_BASE + "maxed.html";
+          setSprite(SPRITE_BASE + "expression_sleep.mp4");
+          document.getElementById("current-bar").style.width = "100%";
+          document.getElementById("current-pct").textContent = "100%";
         } else {
           spritesPaused = false;
-          document.getElementById("sprite").src =
-            SPRITE_BASE + SPRITES[spriteIdx];
+          setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
         }
       }
 
@@ -753,7 +751,7 @@
       function renderError(msg, hint) {
         fetchError = true;
         spritesPaused = true;
-        document.getElementById("sprite").src = SPRITE_BASE + "error.html";
+        setSprite(SPRITE_BASE + "idle_blink.mp4");
 
         document.getElementById("current-card").style.display = "none";
         document.getElementById("weekly-card").style.display = "none";
@@ -784,8 +782,7 @@
         if (!fetchError) return;
         fetchError = false;
         spritesPaused = false;
-        document.getElementById("sprite").src =
-          SPRITE_BASE + SPRITES[spriteIdx];
+        setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
         document.getElementById("current-card").style.display = "";
         document.getElementById("weekly-card").style.display = "";
         document.getElementById("error-panel").classList.remove("visible");
