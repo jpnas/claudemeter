@@ -3,6 +3,7 @@
 A lightweight web dashboard that polls the Anthropic Claude Code usage API and displays session and weekly usage.
 
 <img width="800" height="480" alt="Screenshot 2026-05-18 at 14 50 03" src="https://github.com/user-attachments/assets/12990d4e-3b25-4ad9-abbc-c515cc1e6b6f" />
+
 ---
 
 ## macOS — sem Docker
