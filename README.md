@@ -1,7 +1,8 @@
 # Claudemeter
 
-A lightweight web dashboard that polls the Anthropic Claude Code usage API and displays session and weekly usage on an 800×480 screen.
-<img width="800" height="480" alt="Screenshot 2026-05-18 at 14 47 35" src="https://github.com/user-attachments/assets/5d1fe0aa-64d1-436c-97bb-99c0d7e7108f" />
+A lightweight web dashboard that polls the Anthropic Claude Code usage API and displays session and weekly usage.
+
+<img width="800" height="480" alt="Screenshot 2026-05-18 at 14 50 03" src="https://github.com/user-attachments/assets/12990d4e-3b25-4ad9-abbc-c515cc1e6b6f" />
 ---
 
 ## macOS — sem Docker
