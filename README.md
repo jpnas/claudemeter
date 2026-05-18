@@ -121,9 +121,3 @@ Acesse `http://localhost:3333`.
 | `PORT`             | `3333`                       | Porta do servidor.                                               |
 
 **Ordem de prioridade:** `TOKEN_FILE` → `OAUTH_TOKEN` → `CREDENTIALS_PATH`
-
----
-
-## Mock Mode
-
-Se nenhum token for encontrado ou a API retornar erro, o servidor serve dados estáticos (19% current, 15% weekly) e loga `[MOCK MODE]`.
