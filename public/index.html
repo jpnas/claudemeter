@@ -38,6 +38,7 @@
         padding: 16px 28px 12px;
         gap: 10px;
         flex-shrink: 0;
+        justify-content: center;
       }
 
       /* ── Header ── */
@@ -751,8 +752,7 @@
       function renderError(msg, hint) {
         fetchError = true;
         spritesPaused = true;
-        document.getElementById("sprite").src =
-          SPRITE_BASE + "error.html";
+        document.getElementById("sprite").src = SPRITE_BASE + "error.html";
 
         document.getElementById("current-card").style.display = "none";
         document.getElementById("weekly-card").style.display = "none";
