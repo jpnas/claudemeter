@@ -404,7 +404,9 @@
 
       function nextSprite() {
         if (spritesPaused) return;
-        spriteIdx = (spriteIdx + 1) % SPRITES.length;
+        let next;
+        do { next = Math.floor(Math.random() * SPRITES.length); } while (next === spriteIdx);
+        spriteIdx = next;
         setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
       }
       setSprite(SPRITE_BASE + SPRITES[spriteIdx]);
