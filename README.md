@@ -67,6 +67,70 @@ rm ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
 
 ---
 
+## Windows — without Docker
+
+### 1. Install Node.js
+
+Download and install from [nodejs.org](https://nodejs.org) if you don't have it yet.
+
+### 2. Install dependencies
+
+```powershell
+npm install
+```
+
+### 3. Point the server to your credentials file
+
+Claude Code stores its credentials locally. The server reads `claudeAiOauth.accessToken` from that file automatically and re-reads it on every poll, so token refreshes are picked up without a restart.
+
+Set `CREDENTIALS_PATH` to wherever Claude Code saves its credentials on your machine. The most common locations are:
+
+| Scenario | Path |
+|---|---|
+| Claude Code CLI (default) | `%USERPROFILE%\.claude\credentials.json` |
+| Claude Desktop app | `%APPDATA%\Claude\credentials.json` |
+
+Run the server (pick the path that exists on your machine):
+
+```powershell
+$env:CREDENTIALS_PATH="$env:USERPROFILE\.claude\credentials.json"
+node server.js
+```
+
+Open `http://localhost:3333`.
+
+### 4. Keep the server running in the background (optional)
+
+Use Task Scheduler to start the server on login:
+
+```powershell
+$projectPath = "$env:USERPROFILE\claudemeter"
+$action  = New-ScheduledTaskAction -Execute "node.exe" `
+             -Argument "$projectPath\server.js" `
+             -WorkingDirectory $projectPath
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$env_var = New-ScheduledTaskSettingsSet
+Register-ScheduledTask -TaskName "Claudemeter" -Action $action -Trigger $trigger `
+  -RunLevel Highest `
+  -Description "Claudemeter dashboard server"
+```
+
+To set the credentials path in the scheduled task, add an environment variable via Task Scheduler GUI: open the task → Edit → Environment Variables (under the action), or pass it inline:
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+  -Argument "-Command `"`$env:CREDENTIALS_PATH='$env:USERPROFILE\.claude\credentials.json'; node '$env:USERPROFILE\claudemeter\server.js'`"" `
+  -WorkingDirectory "$env:USERPROFILE\claudemeter"
+```
+
+### Stop the server
+
+```powershell
+Stop-Process -Name "node" -Force
+```
+
+---
+
 ## Windows — with Docker
 
 ### Prerequisites
