@@ -302,6 +302,65 @@
         font-weight: 400;
         letter-spacing: 1px;
       }
+
+      /* ── Mini screen overrides (≤ 800×480 physical display) ── */
+      .mini body {
+        padding: 5px 0px;
+        gap: 0px;
+      }
+
+      .mini .header {
+        height: 80px;
+        gap: 14px;
+      }
+
+      .mini .logo {
+        width: 80px;
+        height: 80px;
+      }
+
+      .mini .title {
+        margin-bottom: 12px;
+        margin-left: 12px;
+        font-size: 50px;
+      }
+
+      .mini .cards {
+        gap: 12px;
+      }
+
+      .mini .card {
+        padding: 10px 18px;
+      }
+
+      .mini .card-header {
+        margin-bottom: 10px;
+      }
+
+      .mini .pct {
+        font-size: 55px;
+      }
+
+      .mini .badge {
+        font-size: 24px;
+        padding: 10px 22px;
+        margin-top: 6px;
+      }
+
+      .mini .progress-track {
+        height: 24px;
+        margin-bottom: 14px;
+      }
+
+      .mini .countdown {
+        font-size: 30px;
+        letter-spacing: 1.2px;
+      }
+
+      .mini .status-text {
+        font-size: 24px;
+        letter-spacing: 1.5px;
+      }
     </style>
   </head>
   <body>
@@ -375,6 +434,11 @@
 
     <script>
       "use strict";
+
+      /* ── Mini-screen detection ── */
+      if (window.screen.width <= 960 && window.screen.height <= 540) {
+        document.documentElement.classList.add("mini");
+      }
 
       /* ── Sprites ── */
       const SPRITE_BASE = "/sprites/";
