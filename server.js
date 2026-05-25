@@ -42,6 +42,18 @@ function getDesktopAesKey() {
   return _desktopAesKey;
 }
 
+// The token cache is keyed by "<clientId>:<userId>:<audience>:<space-separated scopes>",
+// and may hold several entries (e.g. a `user:office` token and a Claude Code token).
+// The /api/oauth/usage endpoint requires the `user:profile` scope, so we must pick a
+// non-expired entry whose key advertises it — otherwise the API returns 403. Among
+// the eligible entries we take the one that expires latest.
+function pickProfileEntry(cache, now = Date.now()) {
+  const usable = Object.entries(cache)
+    .filter(([key, e]) => key.includes('user:profile') && (!e.expiresAt || Number(e.expiresAt) > now))
+    .sort(([, a], [, b]) => Number(b.expiresAt) - Number(a.expiresAt));
+  return usable.length ? usable[0][1] : null;
+}
+
 function readDesktopToken() {
   const aesKey = getDesktopAesKey();
   const config = JSON.parse(fs.readFileSync(path.join(CLAUDE_DESKTOP_DIR, 'config.json'), 'utf8'));
@@ -54,11 +66,10 @@ function readDesktopToken() {
     decipher.update(blob.subarray(15, blob.length - 16)),
     decipher.final(),
   ]).toString('utf8');
-  const entries = Object.values(JSON.parse(plain));
-  if (!entries.length) throw new Error('empty token cache in Claude Desktop config.json');
-  const now = Date.now();
-  const valid = entries.filter(e => !e.expiresAt || new Date(e.expiresAt).getTime() > now);
-  const entry = valid.sort((a, b) => new Date(b.expiresAt) - new Date(a.expiresAt))[0] || entries[0];
+  const cache = JSON.parse(plain);
+  if (!Object.keys(cache).length) throw new Error('empty token cache in Claude Desktop config.json');
+  const entry = pickProfileEntry(cache);
+  if (!entry) throw new Error('no non-expired Claude Desktop token with the user:profile scope (required by /api/oauth/usage)');
   const token = entry.token || entry.accessToken || entry.access_token;
   if (!token) throw new Error('no token field found in Claude Desktop token cache entry');
   return token;
@@ -192,9 +203,13 @@ app.get('/usage', (_req, res) => {
   res.status(503).json({ error: true, ...(lastError ?? { message: 'no data yet' }) });
 });
 
-poll().then(() => {
-  setInterval(poll, POLL_INTERVAL_MS);
-  app.listen(PORT, () => {
-    console.log(`Claudemeter listening on http://localhost:${PORT}`);
+if (require.main === module) {
+  poll().then(() => {
+    setInterval(poll, POLL_INTERVAL_MS);
+    app.listen(PORT, () => {
+      console.log(`Claudemeter listening on http://localhost:${PORT}`);
+    });
   });
-});
+}
+
+module.exports = { pickProfileEntry };

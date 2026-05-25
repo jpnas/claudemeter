@@ -57,11 +57,20 @@ const cache = JSON.parse(plain);
 const entries = Object.entries(cache);
 console.log(`Found ${entries.length} token cache entr${entries.length === 1 ? 'y' : 'ies'}:\n`);
 
+// Scopes aren't a field on the entry — they're the trailing segment of the cache key,
+// after the audience: "<clientId>:<userId>:<audience>:<space-separated scopes>".
+function scopesFromKey(key) {
+  const marker = 'api.anthropic.com:';
+  const i = key.indexOf(marker);
+  return i >= 0 ? key.slice(i + marker.length) : '(scopes not found in key)';
+}
+
 for (const [key, e] of entries) {
   const token = e.token || e.accessToken || e.access_token;
+  const scopes = scopesFromKey(key);
   console.log(`--- key: ${key}`);
   console.log(`    token:        ${mask(token)}`);
-  console.log(`    scopes:       ${JSON.stringify(e.scopes ?? e.scope ?? '(no scope field)')}`);
+  console.log(`    scopes:       ${scopes}${scopes.includes('user:profile') ? '  <- has user:profile' : ''}`);
   console.log(`    expiresAt:    ${e.expiresAt ?? '(none)'}`);
   console.log(`    subscription: ${e.subscriptionType ?? e.account?.subscriptionType ?? '(none)'}`);
   const otherKeys = Object.keys(e).filter(k => !['token', 'accessToken', 'access_token', 'refreshToken', 'refresh_token'].includes(k));
@@ -69,11 +78,7 @@ for (const [key, e] of entries) {
   console.log('');
 }
 
-const hasProfile = entries.some(([, e]) => {
-  const s = e.scopes ?? e.scope ?? '';
-  const str = Array.isArray(s) ? s.join(' ') : String(s);
-  return str.includes('user:profile');
-});
+const hasProfile = entries.some(([key]) => scopesFromKey(key).includes('user:profile'));
 console.log(hasProfile
   ? '✅ At least one entry has `user:profile` — selecting that entry should fix the 403.'
   : '❌ No entry has `user:profile` — the Desktop token genuinely lacks the scope the usage endpoint needs.');
