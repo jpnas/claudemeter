@@ -15,40 +15,25 @@ Inspired by https://github.com/HermannBjorgvin/Clawdmeter.
 npm install
 ```
 
-### 2. Set up automatic token refresh
-
-Edit the plist replacing `REPLACE_WITH_FULL_PATH` with the absolute path to the project:
+### 2. Start the server
 
 ```bash
-sed -i '' "s|/Users/joaopedronascimento|$HOME/claudemeter|g" scripts/com.claudemeter.token-refresh.plist
-```
-
-Copy to launchd and enable:
-
-```bash
-cp scripts/com.claudemeter.token-refresh.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
-```
-
-The script reads the token from Keychain and writes it to `~/.claudemeter/token`. It runs once on load and then every hour.
-
-### 3. Start the server
-
-**Foreground** (terminal stays attached; `Ctrl+C` to stop):
-
-```bash
-TOKEN_FILE=~/.claudemeter/token node server.js
-```
-
-**Background** (close the terminal without stopping the server):
-
-```bash
-TOKEN_FILE=~/.claudemeter/token node server.js &
+node server.js
 ```
 
 Open `http://localhost:3333`.
 
-### Check if running / stop
+The server reads the OAuth token directly from the macOS Keychain (`Claude Code-credentials`) on every poll. Claude Code refreshes that token in place, so there's nothing to run or manage — no scripts, no token files.
+
+### Run in the background
+
+**Background** (close the terminal without stopping the server):
+
+```bash
+node server.js &
+```
+
+**Check if running / stop:**
 
 ```bash
 # Show the PID and confirm the process
@@ -58,7 +43,18 @@ ps aux | grep "node server.js" | grep -v grep
 kill <PID>
 ```
 
-### Remove the launchd job
+### Optional: token-file refresh via launchd
+
+Only needed if you can't read the Keychain from the server process (e.g. running headless or under a different user). The launchd job writes the token to `~/.claudemeter/token`, which `TOKEN_FILE` then reads:
+
+```bash
+sed -i '' "s|/Users/joaopedronascimento|$HOME/claudemeter|g" scripts/com.claudemeter.token-refresh.plist
+cp scripts/com.claudemeter.token-refresh.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
+TOKEN_FILE=~/.claudemeter/token node server.js
+```
+
+Remove it later with:
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
@@ -209,4 +205,4 @@ Open `http://localhost:3333`.
 | `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON file with `claudeAiOauth.accessToken` (Claude Code CLI).       |
 | `PORT`             | `3333`                       | Server port.                                                        |
 
-**Priority order:** `TOKEN_FILE` → `OAUTH_TOKEN` → Claude Desktop config.json (Windows, auto-decrypted) → `CREDENTIALS_PATH` (Claude Code CLI)
+**Priority order:** `TOKEN_FILE` → `OAUTH_TOKEN` → macOS Keychain (`Claude Code-credentials`) → Claude Desktop config.json (Windows, auto-decrypted) → `CREDENTIALS_PATH` (Claude Code CLI)

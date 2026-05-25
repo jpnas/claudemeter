@@ -6,18 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm install
-TOKEN_FILE=~/.claudemeter/token node server.js
+node server.js
 ```
 
-The server starts on port 3333 by default. No build step — it's plain Node.js + Express serving static files.
+The server starts on port 3333 by default. No build step — it's plain Node.js + Express serving static files. On macOS and on Windows with Claude Desktop, no token configuration is needed (see below).
 
 ## Token authentication
 
-The server reads an OAuth token on every poll via one of three sources (in priority order):
+The server reads an OAuth token on every poll via the first available source, in priority order:
 
 1. `TOKEN_FILE` env var — path to a file containing the raw token string (re-read each poll, so token refreshes are picked up automatically)
 2. `OAUTH_TOKEN` env var — token string directly (static; requires restart to refresh)
-3. `CREDENTIALS_PATH` env var (default `~/.claude/credentials.json`) — parses `claudeAiOauth.accessToken` from Claude's credential file
+3. **macOS Keychain** (`readKeychainToken`) — runs `security find-generic-password -s "Claude Code-credentials" -w` and parses `claudeAiOauth.accessToken`. Tried only on `darwin`; falls through to `CREDENTIALS_PATH` if the entry is missing.
+4. **Claude Desktop config.json** (Windows, `readDesktopToken`) — AES-256-GCM-decrypts `oauth:tokenCache` using the DPAPI-protected key from `Local State`. Used when that config file exists.
+5. `CREDENTIALS_PATH` env var (default `~/.claude/credentials.json`) — parses `claudeAiOauth.accessToken` from Claude Code CLI's credential file
 
 A 401 from the API means the token is expired. On macOS, `scripts/refresh-token-mac.sh` reads from Keychain and writes to `~/.claudemeter/token`; the launchd plist runs it hourly. On Windows, `scripts/refresh-token-windows.ps1` extracts the token from a Docker container running Claude Code.
 

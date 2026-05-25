@@ -5,7 +5,7 @@ const express = require('express');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFile, execSync } = require('child_process');
+const { execFile, execSync, execFileSync } = require('child_process');
 
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
 const TOKEN_FILE       = process.env.TOKEN_FILE;
@@ -64,9 +64,28 @@ function readDesktopToken() {
   return token;
 }
 
+// On macOS, Claude Code stores its OAuth token in the login Keychain under
+// the "Claude Code-credentials" service. Claude Code refreshes it in place,
+// so reading it on every poll picks up refreshes automatically.
+function readKeychainToken() {
+  const raw = execFileSync(
+    '/usr/bin/security',
+    ['find-generic-password', '-s', 'Claude Code-credentials', '-w'],
+    { encoding: 'utf8' }
+  );
+  const creds = JSON.parse(raw);
+  if (!creds.claudeAiOauth?.accessToken) throw new Error('accessToken not found in Keychain credentials');
+  return creds.claudeAiOauth.accessToken;
+}
+
 function readToken() {
   if (TOKEN_FILE) return fs.readFileSync(TOKEN_FILE.replace(/^~/, os.homedir()), 'utf8').trim();
   if (process.env.OAUTH_TOKEN) return process.env.OAUTH_TOKEN;
+
+  // On macOS, read directly from the Claude Code Keychain entry
+  if (process.platform === 'darwin') {
+    try { return readKeychainToken(); } catch { /* fall through to credentials.json */ }
+  }
 
   // On Windows, decrypt directly from Claude Desktop's config.json
   if (fs.existsSync(path.join(CLAUDE_DESKTOP_DIR, 'config.json'))) {
