@@ -301,16 +301,26 @@
         font-size: 16px;
         font-weight: 400;
         letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1.4;
       }
 
-      /* Fixed-width slot so the spinner glyph's varying advance width
-         (font fallback differs per glyph, esp. on Windows) can't shift
-         the verb that follows it. */
+      /* Fixed-size slot so the spinner glyph can't shift the verb. The
+         glyphs (· ✻ ✽ …) come from per-glyph font fallback whose advance
+         width AND line metrics differ (esp. on Windows), which otherwise
+         jittered the verb horizontally (width) and vertically (height).
+         A fixed box + flex centering + overflow:hidden decouples the
+         glyph's metrics from the row entirely. */
       .spinner-glyph {
-        display: inline-block;
-        width: 1.6em;
+        flex: 0 0 1.6em;
+        height: 1.4em;
         margin-right: 0.25em;
-        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        overflow: hidden;
       }
 
       /* ── Mini screen overrides (≤ 800×480 physical display) ── */
