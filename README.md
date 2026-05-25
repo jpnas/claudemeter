@@ -67,7 +67,50 @@ rm ~/Library/LaunchAgents/com.claudemeter.token-refresh.plist
 
 ---
 
-## Windows — without Docker
+## Windows — without Docker (Claude Desktop)
+
+Use this if you only have Claude Desktop installed (no Claude Code CLI).
+
+### 1. Install Node.js
+
+Download and install from [nodejs.org](https://nodejs.org) if you don't have it yet.
+
+### 2. Install dependencies
+
+```powershell
+npm install
+```
+
+### 3. Start the server
+
+```powershell
+node server.js
+```
+
+Open `http://localhost:3333`.
+
+The server decrypts the OAuth token directly from Claude Desktop's encrypted config on every poll. No scripts to run, no tokens to manage — Claude Desktop keeps the token fresh automatically.
+
+### 4. Keep the server running in the background (optional)
+
+```powershell
+$projectPath = "$env:USERPROFILE\claudemeter"
+$action  = New-ScheduledTaskAction -Execute "node.exe" `
+             -Argument "$projectPath\server.js" `
+             -WorkingDirectory $projectPath
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+Register-ScheduledTask -TaskName "Claudemeter" -Action $action -Trigger $trigger -RunLevel Highest
+```
+
+### Stop the server
+
+```powershell
+Stop-Process -Name "node" -Force
+```
+
+---
+
+## Windows — without Docker (Claude Code CLI)
 
 ### 1. Install Node.js
 
@@ -81,19 +124,9 @@ npm install
 
 ### 3. Point the server to your credentials file
 
-Claude Code stores its credentials locally. The server reads `claudeAiOauth.accessToken` from that file automatically and re-reads it on every poll, so token refreshes are picked up without a restart.
-
-Set `CREDENTIALS_PATH` to wherever Claude Code saves its credentials on your machine. The most common locations are:
-
-| Scenario | Path |
-|---|---|
-| Claude Code CLI (default) | `%USERPROFILE%\.claude\credentials.json` |
-| Claude Desktop app | `%APPDATA%\Claude\credentials.json` |
-
-Run the server (pick the path that exists on your machine):
+Claude Code CLI stores credentials at `%USERPROFILE%\.claude\credentials.json`. The server reads `claudeAiOauth.accessToken` from that file automatically on every poll.
 
 ```powershell
-$env:CREDENTIALS_PATH="$env:USERPROFILE\.claude\credentials.json"
 node server.js
 ```
 
@@ -101,26 +134,15 @@ Open `http://localhost:3333`.
 
 ### 4. Keep the server running in the background (optional)
 
-Use Task Scheduler to start the server on login:
-
 ```powershell
 $projectPath = "$env:USERPROFILE\claudemeter"
 $action  = New-ScheduledTaskAction -Execute "node.exe" `
              -Argument "$projectPath\server.js" `
              -WorkingDirectory $projectPath
 $trigger = New-ScheduledTaskTrigger -AtLogOn
-$env_var = New-ScheduledTaskSettingsSet
 Register-ScheduledTask -TaskName "Claudemeter" -Action $action -Trigger $trigger `
   -RunLevel Highest `
   -Description "Claudemeter dashboard server"
-```
-
-To set the credentials path in the scheduled task, add an environment variable via Task Scheduler GUI: open the task → Edit → Environment Variables (under the action), or pass it inline:
-
-```powershell
-$action = New-ScheduledTaskAction -Execute "powershell.exe" `
-  -Argument "-Command `"`$env:CREDENTIALS_PATH='$env:USERPROFILE\.claude\credentials.json'; node '$env:USERPROFILE\claudemeter\server.js'`"" `
-  -WorkingDirectory "$env:USERPROFILE\claudemeter"
 ```
 
 ### Stop the server
@@ -184,7 +206,7 @@ Open `http://localhost:3333`.
 | ------------------ | ---------------------------- | ------------------------------------------------------------------- |
 | `TOKEN_FILE`       | —                            | Path to a file containing the raw token. Re-read on every poll.     |
 | `OAUTH_TOKEN`      | —                            | Token string directly (static; requires restart to refresh).        |
-| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON file with `claudeAiOauth.accessToken`.                         |
+| `CREDENTIALS_PATH` | `~/.claude/credentials.json` | JSON file with `claudeAiOauth.accessToken` (Claude Code CLI).       |
 | `PORT`             | `3333`                       | Server port.                                                        |
 
-**Priority order:** `TOKEN_FILE` → `OAUTH_TOKEN` → `CREDENTIALS_PATH`
+**Priority order:** `TOKEN_FILE` → `OAUTH_TOKEN` → Claude Desktop config.json (Windows, auto-decrypted) → `CREDENTIALS_PATH` (Claude Code CLI)

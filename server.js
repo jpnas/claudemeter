@@ -1,22 +1,79 @@
 'use strict';
 
+const crypto = require('crypto');
 const express = require('express');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFile } = require('child_process');
+const { execFile, execSync } = require('child_process');
 
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
 const TOKEN_FILE       = process.env.TOKEN_FILE;
 const PORT = Number(process.env.PORT) || 3333;
 const POLL_INTERVAL_MS = 60_000;
 
+// Claude Desktop stores its OAuth token AES-256-GCM encrypted in config.json.
+// The AES key is DPAPI-protected in Local State (same OSCrypt format as Chromium).
+const CLAUDE_DESKTOP_DIR = path.join(
+  process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'),
+  'Claude'
+);
+
 let cachedUsage = null;
 let lastError   = null;
+let _desktopAesKey = null; // cached after first DPAPI call (key never changes per installation)
+
+function getDesktopAesKey() {
+  if (_desktopAesKey) return _desktopAesKey;
+  const localState = JSON.parse(fs.readFileSync(path.join(CLAUDE_DESKTOP_DIR, 'Local State'), 'utf8'));
+  const encKey = localState?.os_crypt?.encrypted_key;
+  if (!encKey) throw new Error('os_crypt.encrypted_key not found in Claude Desktop Local State');
+  const encBytes = Buffer.from(encKey, 'base64').subarray(5); // strip 'DPAPI' prefix
+  const b64 = encBytes.toString('base64');
+  const ps = [
+    'Add-Type -AssemblyName System.Security',
+    `$bytes = [Convert]::FromBase64String('${b64}')`,
+    '$key = [System.Security.Cryptography.ProtectedData]::Unprotect($bytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)',
+    '[Convert]::ToBase64String($key)',
+  ].join('; ');
+  const result = execSync(`powershell -NoProfile -Command "${ps.replace(/"/g, '\\"')}"`)
+    .toString().trim();
+  _desktopAesKey = Buffer.from(result, 'base64');
+  return _desktopAesKey;
+}
+
+function readDesktopToken() {
+  const aesKey = getDesktopAesKey();
+  const config = JSON.parse(fs.readFileSync(path.join(CLAUDE_DESKTOP_DIR, 'config.json'), 'utf8'));
+  const encValue = config['oauth:tokenCache'];
+  if (!encValue) throw new Error('oauth:tokenCache not found in Claude Desktop config.json');
+  const blob = Buffer.from(encValue, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', aesKey, blob.subarray(3, 15));
+  decipher.setAuthTag(blob.subarray(blob.length - 16));
+  const plain = Buffer.concat([
+    decipher.update(blob.subarray(15, blob.length - 16)),
+    decipher.final(),
+  ]).toString('utf8');
+  const entries = Object.values(JSON.parse(plain));
+  if (!entries.length) throw new Error('empty token cache in Claude Desktop config.json');
+  const now = Date.now();
+  const valid = entries.filter(e => !e.expiresAt || new Date(e.expiresAt).getTime() > now);
+  const entry = valid.sort((a, b) => new Date(b.expiresAt) - new Date(a.expiresAt))[0] || entries[0];
+  const token = entry.token || entry.accessToken || entry.access_token;
+  if (!token) throw new Error('no token field found in Claude Desktop token cache entry');
+  return token;
+}
 
 function readToken() {
   if (TOKEN_FILE) return fs.readFileSync(TOKEN_FILE.replace(/^~/, os.homedir()), 'utf8').trim();
   if (process.env.OAUTH_TOKEN) return process.env.OAUTH_TOKEN;
+
+  // On Windows, decrypt directly from Claude Desktop's config.json
+  if (fs.existsSync(path.join(CLAUDE_DESKTOP_DIR, 'config.json'))) {
+    return readDesktopToken();
+  }
+
+  // Fall back to Claude Code credentials.json
   const resolved = CREDENTIALS_PATH.replace(/^~/, os.homedir());
   const raw = fs.readFileSync(resolved, 'utf8');
   const creds = JSON.parse(raw);
@@ -71,17 +128,31 @@ async function poll() {
     lastError = null;
   } catch (err) {
     const is401 = err.message?.includes('401');
-    if (is401 && TOKEN_FILE && process.platform === 'darwin') {
-      console.log('[INFO] Token expired, running refresh script...');
-      try {
-        await runRefreshScript();
-        const token = readToken();
-        cachedUsage = await fetchUsage(token);
-        lastError = null;
-        console.log('[INFO] Token refreshed successfully.');
-        return;
-      } catch (refreshErr) {
-        console.error('[ERROR] Token refresh failed:', refreshErr.message);
+    if (is401) {
+      // macOS: run the shell refresh script then retry
+      if (TOKEN_FILE && process.platform === 'darwin') {
+        console.log('[INFO] Token expired, running refresh script...');
+        try {
+          await runRefreshScript();
+          cachedUsage = await fetchUsage(readToken());
+          lastError = null;
+          console.log('[INFO] Token refreshed successfully.');
+          return;
+        } catch (refreshErr) {
+          console.error('[ERROR] Token refresh failed:', refreshErr.message);
+        }
+      }
+      // Windows: Claude Desktop refreshes its own token cache; just re-read and retry
+      if (process.platform === 'win32' && fs.existsSync(path.join(CLAUDE_DESKTOP_DIR, 'config.json'))) {
+        console.log('[INFO] Token expired, re-reading from Claude Desktop...');
+        try {
+          cachedUsage = await fetchUsage(readDesktopToken());
+          lastError = null;
+          console.log('[INFO] Token re-read successfully.');
+          return;
+        } catch (retryErr) {
+          console.error('[ERROR] Token re-read failed:', retryErr.message);
+        }
       }
     }
     console.error('[ERROR] Could not fetch usage:', err.message);
