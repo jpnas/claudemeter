@@ -107,7 +107,10 @@ async function fetchUsage(token) {
       'User-Agent': 'claude-code/2.0.32'
     }
   });
-  if (!res.ok) throw new Error(`Anthropic API returned ${res.status} ${res.statusText}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Anthropic API returned ${res.status} ${res.statusText}${body ? ` — ${body}` : ''}`);
+  }
   return res.json();
 }
 
