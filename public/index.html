@@ -303,6 +303,16 @@
         letter-spacing: 1px;
       }
 
+      /* Fixed-width slot so the spinner glyph's varying advance width
+         (font fallback differs per glyph, esp. on Windows) can't shift
+         the verb that follows it. */
+      .spinner-glyph {
+        display: inline-block;
+        width: 1.6em;
+        margin-right: 0.25em;
+        text-align: center;
+      }
+
       /* ── Mini screen overrides (≤ 800×480 physical display) ── */
             .mini body {
         height: 100vh;
@@ -432,7 +442,7 @@
       </div>
 
       <div class="status-bar">
-        <span class="status-text" id="status-text"></span>
+        <span class="status-text" id="status-text"><span class="spinner-glyph" id="status-icon"></span><span id="status-verb"></span></span>
       </div>
     </div>
 
@@ -706,12 +716,15 @@
 
         if (fetchError) return;
         if (isMaxed) {
-          document.getElementById("status-text").textContent =
+          document.getElementById("status-icon").textContent = "";
+          document.getElementById("status-verb").textContent =
             "limit reached. claude is napping…";
           return;
         }
-        document.getElementById("status-text").textContent =
-          SPINNER_FRAMES[spinnerIdx] + " " + PHRASES[phraseIdx] + "…";
+        document.getElementById("status-icon").textContent =
+          SPINNER_FRAMES[spinnerIdx];
+        document.getElementById("status-verb").textContent =
+          PHRASES[phraseIdx] + "…";
       }
 
       /* ── Usage rendering ── */
@@ -826,7 +839,8 @@
         document.getElementById("current-card").style.display = "none";
         document.getElementById("weekly-card").style.display = "none";
         document.getElementById("error-panel").classList.add("visible");
-        document.getElementById("status-text").textContent = "";
+        document.getElementById("status-icon").textContent = "";
+        document.getElementById("status-verb").textContent = "";
 
         document.getElementById("err-msg").textContent = msg;
 
