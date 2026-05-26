@@ -725,14 +725,16 @@
         }
 
         if (fetchError) return;
+        const icon = document.getElementById("status-icon");
         if (isMaxed) {
-          document.getElementById("status-icon").textContent = "";
+          icon.textContent = "";
+          icon.style.display = "none";
           document.getElementById("status-verb").textContent =
             "limit reached. claude is napping…";
           return;
         }
-        document.getElementById("status-icon").textContent =
-          SPINNER_FRAMES[spinnerIdx];
+        icon.style.display = "";
+        icon.textContent = SPINNER_FRAMES[spinnerIdx];
         document.getElementById("status-verb").textContent =
           PHRASES[phraseIdx] + "…";
       }
