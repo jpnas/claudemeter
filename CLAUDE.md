@@ -42,6 +42,12 @@ The `/usage` API response shape the frontend expects:
 }
 ```
 
+## Spotify player
+
+A second screen (`#player-screen` in `index.html`) controls Spotify playback; the round button in the top-right corner switches between Usage and Player and never moves. The page polls `GET /spotify/state` every 3 seconds only while the player is visible, and sends `POST /spotify/<play|pause|next|previous|shuffle|repeat|seek>?value=...`.
+
+`server.js` loads `.env` (next to `server.js`) with `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`. The one-time login is `http://127.0.0.1:3333/spotify/login` (the Spotify app must have `http://127.0.0.1:3333/spotify/callback` as Redirect URI); the refresh token is stored in `~/.claudemeter/spotify.json`. Playback commands require Spotify Premium. Smart Shuffle is read from the undocumented `smart_shuffle` field and cannot be toggled through the API.
+
 ## Color thresholds
 
 Bar fill color follows `getColor()` in `index.html`:

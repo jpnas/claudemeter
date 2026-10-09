@@ -38,6 +38,10 @@
         gap: 10px;
         flex-shrink: 0;
         justify-content: center;
+        position: relative;
+        touch-action: none;
+        user-select: none;
+        overscroll-behavior: none;
       }
 
       /* ── Header ── */
@@ -322,6 +326,224 @@
         overflow: hidden;
       }
 
+      /* ── Screen switch button ── */
+      .nav-btn {
+        position: absolute;
+        top: 16px;
+        right: 28px;
+        z-index: 10;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: #2a2a28;
+        border: none;
+        color: #faf9f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .nav-btn svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .nav-btn:active {
+        background: #3a3935;
+      }
+
+      /* ── Player ── */
+      #player-screen {
+        position: absolute;
+        inset: 0;
+        background: #0d0d0d;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        padding: 0 28px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      #player-screen.active {
+        transform: none;
+      }
+
+      .art {
+        width: 340px;
+        height: 340px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        background: #2a2a28;
+        object-fit: cover;
+      }
+
+      .info {
+        flex: 1;
+        min-width: 0;
+        height: 340px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .track {
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .artist {
+        font-size: 22px;
+        color: #b0aea5;
+        margin-top: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .seek {
+        position: relative;
+        height: 20px;
+        background: #2a2a28;
+        border-radius: 6px;
+        cursor: pointer;
+        touch-action: none;
+      }
+
+      .seek-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: #d97757;
+        border-radius: 6px;
+      }
+
+      .seek-thumb {
+        position: absolute;
+        top: 50%;
+        width: 28px;
+        height: 28px;
+        margin-left: -14px;
+        margin-top: -14px;
+        border-radius: 50%;
+        background: #faf9f5;
+        box-shadow: 0 0 0 4px #0d0d0d;
+      }
+
+      .times {
+        display: flex;
+        justify-content: space-between;
+        font-family: "DM Mono", "Courier New", monospace;
+        font-size: 18px;
+        color: #b0aea5;
+        margin-top: 10px;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      #player-screen.idle .controls,
+      #player-screen.idle .seek {
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .ctl {
+        background: none;
+        border: none;
+        color: #faf9f5;
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+      }
+
+      .ctl svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .ctl.toggle {
+        color: #4a4945;
+      }
+
+      .ctl.toggle.on {
+        color: #d97757;
+      }
+
+      .ctl.toggle.on::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #d97757;
+      }
+
+      .ctl .icon-repeat-one {
+        display: none;
+      }
+
+      .ctl.repeat-one .icon-repeat-one {
+        display: block;
+      }
+
+      .ctl.repeat-one .icon-repeat {
+        display: none;
+      }
+
+      .ctl .icon-smart {
+        display: none;
+      }
+
+      .ctl.smart .icon-smart {
+        display: block;
+      }
+
+      .ctl.smart .icon-shuffle {
+        display: none;
+      }
+
+      .ctl.play {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: #d97757;
+        color: #0d0d0d;
+      }
+
+      .ctl.play svg {
+        width: 36px;
+        height: 36px;
+      }
+
+      .player-msg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 14px;
+        text-align: center;
+        font-family: "DM Mono", "Courier New", monospace;
+        font-size: 14px;
+        color: #d97757;
+        letter-spacing: 0.5px;
+      }
+
       /* ── Mini screen overrides (≤ 800×480 physical display) ── */
             .mini body {
         height: 100vh;
@@ -384,6 +606,88 @@
         font-size: 32px;
         letter-spacing: 1.5px;
         margin-top: 22px;
+      }
+
+      .mini .nav-btn {
+        top: 36px;
+        right: 40px;
+        width: 64px;
+        height: 64px;
+      }
+
+      .mini .nav-btn svg {
+        width: 32px;
+        height: 32px;
+      }
+
+      .mini #player-screen {
+        gap: 40px;
+        padding: 0 40px;
+      }
+
+      .mini .art {
+        width: 420px;
+        height: 420px;
+      }
+
+      .mini .info {
+        height: 420px;
+      }
+
+      .mini .track {
+        font-size: 44px;
+      }
+
+      .mini .artist {
+        font-size: 30px;
+        margin-top: 10px;
+      }
+
+      .mini .seek {
+        height: 24px;
+      }
+
+      .mini .seek-thumb {
+        width: 36px;
+        height: 36px;
+        margin-left: -18px;
+        margin-top: -18px;
+        box-shadow: 0 0 0 5px #0d0d0d;
+      }
+
+      .mini .times {
+        font-size: 24px;
+        margin-top: 12px;
+      }
+
+      .mini .ctl {
+        width: 64px;
+        height: 64px;
+      }
+
+      .mini .ctl svg {
+        width: 38px;
+        height: 38px;
+      }
+
+      .mini .ctl.toggle.on::after {
+        width: 6px;
+        height: 6px;
+      }
+
+      .mini .ctl.play {
+        width: 96px;
+        height: 96px;
+      }
+
+      .mini .ctl.play svg {
+        width: 44px;
+        height: 44px;
+      }
+
+      .mini .player-msg {
+        font-size: 20px;
+        bottom: 20px;
       }
     </style>
   </head>
@@ -455,6 +759,51 @@
         <span class="status-text" id="status-text"><span class="spinner-glyph" id="status-icon"></span><span id="status-verb"></span></span>
       </div>
     </div>
+
+    <div id="player-screen">
+      <img class="art" id="player-art" alt="" draggable="false" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+      <div class="info">
+        <div>
+          <div class="track" id="player-track"></div>
+          <div class="artist" id="player-artist"></div>
+        </div>
+
+        <div>
+          <div class="seek" id="seek">
+            <div class="seek-fill" id="seek-fill"></div>
+            <div class="seek-thumb" id="seek-thumb"></div>
+          </div>
+          <div class="times"><span id="time-current">0:00</span><span id="time-total">0:00</span></div>
+        </div>
+
+        <div class="controls">
+          <button class="ctl toggle" id="shuffle-btn">
+            <svg class="icon-shuffle" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z"/><path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.938z"/></svg>
+            <svg class="icon-smart" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.75 1.75 6.05 4.7 9 6 6.05 7.3 4.75 10.25 3.45 7.3 0.5 6 3.45 4.7z"/>
+              <g transform="translate(5.5 5) scale(0.66)">
+                <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922z"/>
+                <path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.938z"/>
+              </g>
+            </svg>
+          </button>
+          <button class="ctl" id="prev-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+          </button>
+          <button class="ctl play" id="play-btn"></button>
+          <button class="ctl" id="next-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+          </button>
+          <button class="ctl toggle" id="repeat-btn">
+            <svg class="icon-repeat" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/></svg>
+            <svg class="icon-repeat-one" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h.75v1.5h-.75A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5zM12.25 2.5h-.75V1h.75A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25z"/><path d="M9.12 8V1H7.787c-.128.72-.76 1.293-1.787 1.313V3.36h1.57V8h1.55z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="player-msg" id="player-msg"></div>
+    </div>
+
+    <button class="nav-btn" id="nav-btn"></button>
 
     <script>
       "use strict";
@@ -905,6 +1254,243 @@
           renderError(e.message || "fetch error", null);
         }
       }
+
+      /* ── Screen switch ── */
+      const MUSIC_ICON =
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+      const USAGE_ICON =
+        '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>';
+      const PLAY_ICON =
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>';
+      const PAUSE_ICON =
+        '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+
+      const EMPTY_IMAGE =
+        "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+      let playerVisible = false;
+
+      function renderNav() {
+        document
+          .getElementById("player-screen")
+          .classList.toggle("active", playerVisible);
+        document.getElementById("nav-btn").innerHTML = playerVisible
+          ? USAGE_ICON
+          : MUSIC_ICON;
+      }
+
+      function setPlayerVisible(visible) {
+        playerVisible = visible;
+        renderNav();
+        if (playerVisible) fetchPlayer();
+      }
+
+      document
+        .getElementById("nav-btn")
+        .addEventListener("click", () => setPlayerVisible(!playerVisible));
+
+      const playerScreen = document.getElementById("player-screen");
+      let swipeStartX = null;
+
+      document.body.addEventListener("pointerdown", (ev) => {
+        swipeStartX = ev.target.closest("button, .seek") ? null : ev.clientX;
+      });
+
+      document.body.addEventListener("pointermove", (ev) => {
+        if (swipeStartX === null) return;
+        const dx = ev.clientX - swipeStartX;
+        const width = playerScreen.offsetWidth;
+        const offset = playerVisible ? dx : width + dx;
+        playerScreen.style.transition = "none";
+        playerScreen.style.transform = `translateX(${Math.max(0, Math.min(width, offset))}px)`;
+      });
+
+      function endSwipe(ev) {
+        if (swipeStartX === null) return;
+        const dx = ev.type === "pointerup" ? ev.clientX - swipeStartX : 0;
+        swipeStartX = null;
+        playerScreen.style.transition = "";
+        playerScreen.style.transform = "";
+        if (dx < -80 && !playerVisible) setPlayerVisible(true);
+        if (dx > 80 && playerVisible) setPlayerVisible(false);
+      }
+
+      document.body.addEventListener("pointerup", endSwipe);
+      document.body.addEventListener("pointercancel", endSwipe);
+
+      /* ── Player ── */
+      let player = null;
+      let seeking = false;
+      let msgTimer = null;
+
+      function formatTime(ms) {
+        const s = Math.floor(ms / 1000);
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      }
+
+      function showPlayerMsg(text) {
+        document.getElementById("player-msg").textContent = text;
+        if (msgTimer) clearTimeout(msgTimer);
+        msgTimer = setTimeout(() => {
+          document.getElementById("player-msg").textContent = "";
+        }, 5000);
+      }
+
+      function renderSeek() {
+        const pct = player?.duration_ms
+          ? Math.min(100, (player.progress_ms / player.duration_ms) * 100)
+          : 0;
+        document.getElementById("seek-fill").style.width = pct + "%";
+        document.getElementById("seek-thumb").style.left = pct + "%";
+        document.getElementById("time-current").textContent = formatTime(
+          player?.progress_ms ?? 0,
+        );
+        document.getElementById("time-total").textContent = formatTime(
+          player?.duration_ms ?? 0,
+        );
+      }
+
+      function renderPlayer(data) {
+        const screen = document.getElementById("player-screen");
+        const art = document.getElementById("player-art");
+        const hasTrack = data.connected && data.track;
+        player = hasTrack ? data : null;
+        screen.classList.toggle("idle", !hasTrack);
+
+        if (!data.connected) {
+          document.getElementById("player-track").textContent =
+            "Spotify not connected";
+          document.getElementById("player-artist").textContent =
+            "Open 127.0.0.1:3333/spotify/login";
+        } else if (!data.track) {
+          document.getElementById("player-track").textContent =
+            "Nothing playing";
+          document.getElementById("player-artist").textContent = "";
+        } else {
+          document.getElementById("player-track").textContent = data.track;
+          document.getElementById("player-artist").textContent = data.album
+            ? `${data.artist} · ${data.album}`
+            : data.artist;
+        }
+
+        if (hasTrack && data.image) {
+          if (art.getAttribute("src") !== data.image) art.src = data.image;
+        } else {
+          art.src = EMPTY_IMAGE;
+        }
+
+        document.getElementById("play-btn").innerHTML = data.is_playing
+          ? PAUSE_ICON
+          : PLAY_ICON;
+
+        const shuffleBtn = document.getElementById("shuffle-btn");
+        shuffleBtn.classList.toggle("on", !!(data.shuffle || data.smart_shuffle));
+        shuffleBtn.classList.toggle("smart", !!data.smart_shuffle);
+
+        const repeatBtn = document.getElementById("repeat-btn");
+        repeatBtn.classList.toggle(
+          "on",
+          data.repeat === "context" || data.repeat === "track",
+        );
+        repeatBtn.classList.toggle("repeat-one", data.repeat === "track");
+
+        if (!seeking) renderSeek();
+      }
+
+      async function fetchPlayer() {
+        try {
+          const res = await fetch("/spotify/state");
+          const data = await res.json();
+          if (!res.ok) {
+            showPlayerMsg(data.message || `HTTP ${res.status}`);
+            return;
+          }
+          renderPlayer(data);
+        } catch (e) {
+          showPlayerMsg(e.message || "fetch error");
+        }
+      }
+
+      async function sendCommand(command, value) {
+        const query =
+          value === undefined ? "" : `?value=${encodeURIComponent(value)}`;
+        try {
+          const res = await fetch(`/spotify/${command}${query}`, {
+            method: "POST",
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            showPlayerMsg(body.message || `HTTP ${res.status}`);
+          }
+        } catch (e) {
+          showPlayerMsg(e.message || "fetch error");
+        }
+        setTimeout(fetchPlayer, 400);
+      }
+
+      document.getElementById("play-btn").addEventListener("click", () => {
+        if (!player) return;
+        player.is_playing = !player.is_playing;
+        document.getElementById("play-btn").innerHTML = player.is_playing
+          ? PAUSE_ICON
+          : PLAY_ICON;
+        sendCommand(player.is_playing ? "play" : "pause");
+      });
+
+      document
+        .getElementById("prev-btn")
+        .addEventListener("click", () => sendCommand("previous"));
+      document
+        .getElementById("next-btn")
+        .addEventListener("click", () => sendCommand("next"));
+
+      document.getElementById("shuffle-btn").addEventListener("click", () => {
+        if (!player) return;
+        sendCommand("shuffle", !(player.shuffle || player.smart_shuffle));
+      });
+
+      const REPEAT_NEXT = { off: "context", context: "track", track: "off" };
+      document.getElementById("repeat-btn").addEventListener("click", () => {
+        if (!player) return;
+        sendCommand("repeat", REPEAT_NEXT[player.repeat] ?? "off");
+      });
+
+      const seekBar = document.getElementById("seek");
+      function seekTo(ev) {
+        const r = seekBar.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+        player.progress_ms = ratio * player.duration_ms;
+        renderSeek();
+      }
+      seekBar.addEventListener("pointerdown", (ev) => {
+        if (!player) return;
+        seeking = true;
+        seekBar.setPointerCapture(ev.pointerId);
+        seekTo(ev);
+      });
+      seekBar.addEventListener("pointermove", (ev) => seeking && seekTo(ev));
+      seekBar.addEventListener("pointerup", (ev) => {
+        if (!seeking) return;
+        seeking = false;
+        if (!player) return;
+        seekTo(ev);
+        sendCommand("seek", player.progress_ms);
+      });
+
+      setInterval(() => {
+        if (!playerVisible || !player?.is_playing || seeking) return;
+        player.progress_ms = Math.min(
+          player.duration_ms,
+          player.progress_ms + 1000,
+        );
+        renderSeek();
+      }, 1000);
+
+      setInterval(() => {
+        if (playerVisible) fetchPlayer();
+      }, 3000);
+
+      renderNav();
 
       fetchAndRender();
       setInterval(fetchAndRender, 30_000);

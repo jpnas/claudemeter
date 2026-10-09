@@ -7,6 +7,9 @@ const os = require('os');
 const path = require('path');
 const { execFile, execSync, execFileSync } = require('child_process');
 
+const ENV_FILE = path.join(__dirname, '.env');
+if (fs.existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH || '~/.claude/credentials.json';
 const TOKEN_FILE       = process.env.TOKEN_FILE;
 const PORT = Number(process.env.PORT) || 3333;
@@ -194,6 +197,71 @@ async function poll() {
   }
 }
 
+const SPOTIFY_TOKEN_FILE   = path.join(os.homedir(), '.claudemeter', 'spotify.json');
+const SPOTIFY_REDIRECT_URI = `http://127.0.0.1:${PORT}/spotify/callback`;
+const SPOTIFY_SCOPES       = 'user-read-playback-state user-modify-playback-state';
+
+let spotifyAccess    = null;
+let spotifyAuthState = null;
+
+class SpotifyError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function spotifyTokenRequest(params) {
+  const credentials = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64');
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Authorization': `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(params),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new SpotifyError(`Spotify token request returned ${res.status}${body ? ` — ${body}` : ''}`, 502);
+  }
+  const data = await res.json();
+  spotifyAccess = { token: data.access_token, expiresAt: Date.now() + (data.expires_in - 60) * 1000 };
+  if (data.refresh_token) {
+    fs.mkdirSync(path.dirname(SPOTIFY_TOKEN_FILE), { recursive: true });
+    fs.writeFileSync(SPOTIFY_TOKEN_FILE, JSON.stringify({ refresh_token: data.refresh_token }));
+  }
+}
+
+async function spotifyToken() {
+  if (spotifyAccess && spotifyAccess.expiresAt > Date.now()) return spotifyAccess.token;
+  if (!fs.existsSync(SPOTIFY_TOKEN_FILE)) throw new SpotifyError('Spotify not connected', 401);
+  const { refresh_token } = JSON.parse(fs.readFileSync(SPOTIFY_TOKEN_FILE, 'utf8'));
+  await spotifyTokenRequest({ grant_type: 'refresh_token', refresh_token });
+  return spotifyAccess.token;
+}
+
+async function spotifyApi(method, endpoint) {
+  const res = await fetch(`https://api.spotify.com/v1/me/player${endpoint}`, {
+    method,
+    headers: { 'Authorization': `Bearer ${await spotifyToken()}` },
+    body: method === 'GET' ? undefined : '',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new SpotifyError(body.error?.message || `Spotify API returned ${res.status}`, res.status);
+  }
+  if (method === 'GET' && res.status === 200) return res.json();
+  return null;
+}
+
+const SPOTIFY_COMMANDS = {
+  play:     ()      => ['PUT',  '/play'],
+  pause:    ()      => ['PUT',  '/pause'],
+  next:     ()      => ['POST', '/next'],
+  previous: ()      => ['POST', '/previous'],
+  shuffle:  (value) => ['PUT',  `/shuffle?state=${value === 'true'}`],
+  repeat:   (value) => ['PUT',  `/repeat?state=${encodeURIComponent(value)}`],
+  seek:     (value) => ['PUT',  `/seek?position_ms=${Math.round(Number(value))}`],
+};
+
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -201,6 +269,67 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/usage', (_req, res) => {
   if (cachedUsage) return res.json(cachedUsage);
   res.status(503).json({ error: true, ...(lastError ?? { message: 'no data yet' }) });
+});
+
+app.get('/spotify/login', (_req, res) => {
+  if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {
+    return res.status(500).send('SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET must be set in .env');
+  }
+  spotifyAuthState = crypto.randomBytes(16).toString('hex');
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: process.env.SPOTIFY_CLIENT_ID,
+    scope: SPOTIFY_SCOPES,
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+    state: spotifyAuthState,
+  });
+  res.redirect(`https://accounts.spotify.com/authorize?${params}`);
+});
+
+app.get('/spotify/callback', async (req, res) => {
+  if (!req.query.code || req.query.state !== spotifyAuthState) {
+    return res.status(400).send(`Spotify login failed: ${req.query.error || 'invalid state'}`);
+  }
+  try {
+    await spotifyTokenRequest({ grant_type: 'authorization_code', code: req.query.code, redirect_uri: SPOTIFY_REDIRECT_URI });
+    res.redirect('/');
+  } catch (err) {
+    res.status(502).send(err.message);
+  }
+});
+
+app.get('/spotify/state', async (_req, res) => {
+  try {
+    const p = await spotifyApi('GET', '');
+    if (!p?.item) return res.json({ connected: true, track: null });
+    res.json({
+      connected: true,
+      is_playing: p.is_playing,
+      progress_ms: p.progress_ms,
+      duration_ms: p.item.duration_ms,
+      shuffle: p.shuffle_state,
+      smart_shuffle: p.smart_shuffle === true,
+      repeat: p.repeat_state,
+      track: p.item.name,
+      artist: (p.item.artists ?? []).map((a) => a.name).join(', '),
+      album: p.item.album?.name ?? '',
+      image: p.item.album?.images?.[0]?.url ?? null,
+    });
+  } catch (err) {
+    if (err.status === 401 && err.message === 'Spotify not connected') return res.json({ connected: false });
+    res.status(err.status || 500).json({ message: err.message });
+  }
+});
+
+app.post('/spotify/:command', async (req, res) => {
+  const command = SPOTIFY_COMMANDS[req.params.command];
+  if (!command) return res.status(404).json({ message: 'unknown command' });
+  try {
+    await spotifyApi(...command(req.query.value));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
 });
 
 if (require.main === module) {
