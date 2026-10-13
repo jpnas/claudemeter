@@ -6,7 +6,7 @@
     <title>Claudemeter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400&family=Pixelify+Sans:wght@600;700&family=Silkscreen&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -357,41 +357,128 @@
       #player-screen {
         position: absolute;
         inset: 0;
-        background: #0d0d0d;
-        display: flex;
-        align-items: center;
-        gap: 32px;
-        padding: 0 28px;
+        background: #141312 radial-gradient(#23211e 1px, transparent 1px) 0 0 / 8px 8px;
+        overflow: hidden;
         transform: translateX(100%);
         transition: transform 0.3s ease;
+        font-family: "Silkscreen", monospace;
+        color: #eee7d7;
       }
 
       #player-screen.active {
         transform: none;
       }
 
-      .art {
-        width: 340px;
-        height: 340px;
-        flex-shrink: 0;
-        border-radius: 8px;
-        background: #2a2a28;
-        object-fit: cover;
+      .deck {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 800px;
+        height: 480px;
+        transform: translate(-50%, -50%) scale(var(--deck-scale, 1));
+      }
+
+      .platter {
+        position: absolute;
+        left: 24px;
+        top: 24px;
+        width: 290px;
+        height: 290px;
+        background: #201e1b;
+      }
+
+      .disc {
+        position: absolute;
+        left: 29px;
+        top: 29px;
+        width: 280px;
+        height: 280px;
+        image-rendering: pixelated;
+      }
+
+      .tonearm {
+        position: absolute;
+        left: 296px;
+        top: 42px;
+        transform-origin: 0 0;
+        transform: rotate(-32deg);
+        transition: transform 0.9s ease-in-out;
+      }
+
+      .tonearm.on {
+        transform: none;
+      }
+
+      .tonearm div {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #cfc8ba;
+      }
+
+      .tonearm .headshell {
+        left: -30px;
+        top: 82px;
+        width: 16px;
+        height: 18px;
+        border-bottom: 4px solid #6f6a62;
+      }
+
+      .pivot {
+        position: absolute;
+        left: 285px;
+        top: 31px;
+        width: 22px;
+        height: 22px;
+        background: #6f6a62;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pivot::after {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: #201e1b;
       }
 
       .info {
-        flex: 1;
-        min-width: 0;
-        height: 340px;
+        position: absolute;
+        left: 348px;
+        top: 24px;
+        width: 428px;
+        height: 290px;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: center;
+      }
+
+      .play-state {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 22px;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #ff7a2f;
+      }
+
+      .play-state.paused {
+        color: #a39c8f;
+      }
+
+      .play-state svg {
+        width: 12px;
+        height: 14px;
       }
 
       .track {
-        font-size: 34px;
+        font-family: "Pixelify Sans", monospace;
         font-weight: 700;
-        line-height: 1.15;
+        font-size: 60px;
+        line-height: 1.05;
+        margin-top: 10px;
         overflow-wrap: anywhere;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -400,61 +487,93 @@
       }
 
       .artist {
-        font-size: 22px;
-        color: #b0aea5;
+        font-family: "Pixelify Sans", monospace;
+        font-weight: 600;
+        font-size: 30px;
+        color: #ff7a2f;
         margin-top: 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      .seek {
-        position: relative;
-        height: 20px;
-        background: #2a2a28;
-        border-radius: 6px;
-        cursor: pointer;
-        touch-action: none;
+      .album {
+        font-size: 20px;
+        color: #a39c8f;
+        margin-top: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
-      .seek-fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        background: #d97757;
-        border-radius: 6px;
+      #player-screen.idle .track {
+        font-size: 44px;
       }
 
-      .seek-thumb {
+      #player-screen.idle .artist {
+        font-family: "Silkscreen", monospace;
+        font-weight: 400;
+        font-size: 20px;
+        color: #a39c8f;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .progress {
         position: absolute;
-        top: 50%;
-        width: 28px;
-        height: 28px;
-        margin-left: -14px;
-        margin-top: -14px;
-        border-radius: 50%;
-        background: #faf9f5;
-        box-shadow: 0 0 0 4px #0d0d0d;
+        left: 24px;
+        top: 330px;
+        width: 752px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
 
       .times {
         display: flex;
         justify-content: space-between;
-        font-family: "DM Mono", "Courier New", monospace;
         font-size: 18px;
-        color: #b0aea5;
-        margin-top: 10px;
+        color: #a39c8f;
+      }
+
+      .seek {
+        position: relative;
+        height: 22px;
+        border: 3px solid #3a3631;
+        padding: 3px;
+        cursor: pointer;
+        touch-action: none;
+      }
+
+      .seek::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -16px;
+        bottom: -16px;
+      }
+
+      .seek-fill {
+        width: 0%;
+        height: 100%;
+        background: #ff7a2f;
       }
 
       .controls {
+        position: absolute;
+        left: 24px;
+        top: 390px;
+        width: 752px;
+        height: 76px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 36px;
       }
 
       #player-screen.idle .controls,
-      #player-screen.idle .seek {
+      #player-screen.idle .progress {
         opacity: 0.35;
         pointer-events: none;
       }
@@ -462,37 +581,49 @@
       .ctl {
         background: none;
         border: none;
-        color: #faf9f5;
+        color: #eee7d7;
         cursor: pointer;
-        position: relative;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
+        gap: 6px;
+        width: 88px;
+        height: 72px;
       }
 
       .ctl svg {
-        width: 30px;
-        height: 30px;
+        width: 52px;
+        height: 40px;
+      }
+
+      .ctl.play svg {
+        width: 44px;
+        height: 44px;
       }
 
       .ctl.toggle {
-        color: #4a4945;
+        width: 72px;
+        color: #6f6a62;
+      }
+
+      .ctl.toggle svg {
+        width: 36px;
+        height: 27px;
+      }
+
+      .ctl.toggle::after {
+        content: "";
+        width: 6px;
+        height: 6px;
       }
 
       .ctl.toggle.on {
-        color: #d97757;
+        color: #ff7a2f;
       }
 
       .ctl.toggle.on::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: #d97757;
+        background: #ff7a2f;
       }
 
       .ctl .icon-repeat-one {
@@ -513,34 +644,21 @@
 
       .ctl.smart .icon-smart {
         display: block;
+        width: 45px;
       }
 
       .ctl.smart .icon-shuffle {
         display: none;
       }
 
-      .ctl.play {
-        width: 76px;
-        height: 76px;
-        border-radius: 50%;
-        background: #d97757;
-        color: #0d0d0d;
-      }
-
-      .ctl.play svg {
-        width: 36px;
-        height: 36px;
-      }
-
       .player-msg {
         position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 14px;
+        left: 24px;
+        right: 100px;
+        top: 6px;
         text-align: center;
-        font-family: "DM Mono", "Courier New", monospace;
         font-size: 14px;
-        color: #d97757;
+        color: #ff7a2f;
         letter-spacing: 0.5px;
       }
 
@@ -619,76 +737,6 @@
         width: 32px;
         height: 32px;
       }
-
-      .mini #player-screen {
-        gap: 40px;
-        padding: 0 40px;
-      }
-
-      .mini .art {
-        width: 420px;
-        height: 420px;
-      }
-
-      .mini .info {
-        height: 420px;
-      }
-
-      .mini .track {
-        font-size: 44px;
-      }
-
-      .mini .artist {
-        font-size: 30px;
-        margin-top: 10px;
-      }
-
-      .mini .seek {
-        height: 24px;
-      }
-
-      .mini .seek-thumb {
-        width: 36px;
-        height: 36px;
-        margin-left: -18px;
-        margin-top: -18px;
-        box-shadow: 0 0 0 5px #0d0d0d;
-      }
-
-      .mini .times {
-        font-size: 24px;
-        margin-top: 12px;
-      }
-
-      .mini .ctl {
-        width: 64px;
-        height: 64px;
-      }
-
-      .mini .ctl svg {
-        width: 38px;
-        height: 38px;
-      }
-
-      .mini .ctl.toggle.on::after {
-        width: 6px;
-        height: 6px;
-      }
-
-      .mini .ctl.play {
-        width: 96px;
-        height: 96px;
-      }
-
-      .mini .ctl.play svg {
-        width: 44px;
-        height: 44px;
-      }
-
-      .mini .player-msg {
-        font-size: 20px;
-        bottom: 20px;
-      }
     </style>
   </head>
   <body>
@@ -761,46 +809,45 @@
     </div>
 
     <div id="player-screen">
-      <img class="art" id="player-art" alt="" draggable="false" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
-      <div class="info">
-        <div>
+      <div class="deck" id="deck">
+        <div class="platter"></div>
+        <canvas class="disc" id="disc" width="56" height="56"></canvas>
+        <div class="tonearm" id="tonearm"><div class="headshell"></div></div>
+        <div class="pivot"></div>
+
+        <div class="info">
+          <div class="play-state" id="play-state"></div>
           <div class="track" id="player-track"></div>
           <div class="artist" id="player-artist"></div>
+          <div class="album" id="player-album"></div>
         </div>
 
-        <div>
+        <div class="progress">
+          <div class="times"><span id="time-current">0:00</span><span id="time-total">0:00</span></div>
           <div class="seek" id="seek">
             <div class="seek-fill" id="seek-fill"></div>
-            <div class="seek-thumb" id="seek-thumb"></div>
           </div>
-          <div class="times"><span id="time-current">0:00</span><span id="time-total">0:00</span></div>
         </div>
 
         <div class="controls">
           <button class="ctl toggle" id="shuffle-btn">
-            <svg class="icon-shuffle" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z"/><path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.938z"/></svg>
-            <svg class="icon-smart" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M4.75 1.75 6.05 4.7 9 6 6.05 7.3 4.75 10.25 3.45 7.3 0.5 6 3.45 4.7z"/>
-              <g transform="translate(5.5 5) scale(0.66)">
-                <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922z"/>
-                <path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.938z"/>
-              </g>
-            </svg>
+            <svg class="icon-shuffle" viewBox="0 0 12 9" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="1" width="3" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="9" y="5" width="1" height="3"/><rect x="10" y="6" width="1" height="1"/><rect x="0" y="6" width="3" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="7" y="1" width="3" height="1"/><rect x="9" y="0" width="1" height="3"/><rect x="10" y="1" width="1" height="1"/></svg>
+            <svg class="icon-smart" viewBox="0 0 15 9" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="1" width="3" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="9" y="5" width="1" height="3"/><rect x="10" y="6" width="1" height="1"/><rect x="0" y="6" width="3" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="7" y="1" width="3" height="1"/><rect x="9" y="0" width="1" height="3"/><rect x="10" y="1" width="1" height="1"/><rect x="13" y="0" width="1" height="3"/><rect x="12" y="1" width="3" height="1"/></svg>
           </button>
           <button class="ctl" id="prev-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+            <svg viewBox="0 0 13 10" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="10"/><rect x="3" y="4" width="2" height="2"/><rect x="5" y="3" width="2" height="4"/><rect x="7" y="2" width="2" height="6"/><rect x="9" y="1" width="2" height="8"/><rect x="11" y="0" width="2" height="10"/></svg>
           </button>
           <button class="ctl play" id="play-btn"></button>
           <button class="ctl" id="next-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+            <svg viewBox="0 0 13 10" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="10"/><rect x="2" y="1" width="2" height="8"/><rect x="4" y="2" width="2" height="6"/><rect x="6" y="3" width="2" height="4"/><rect x="8" y="4" width="2" height="2"/><rect x="11" y="0" width="2" height="10"/></svg>
           </button>
           <button class="ctl toggle" id="repeat-btn">
-            <svg class="icon-repeat" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/></svg>
-            <svg class="icon-repeat-one" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h.75v1.5h-.75A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5zM12.25 2.5h-.75V1h.75A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25z"/><path d="M9.12 8V1H7.787c-.128.72-.76 1.293-1.787 1.313V3.36h1.57V8h1.55z"/></svg>
+            <svg class="icon-repeat" viewBox="0 0 12 9" fill="currentColor" shape-rendering="crispEdges"><rect x="2" y="1" width="7" height="1"/><rect x="8" y="0" width="1" height="3"/><rect x="9" y="1" width="1" height="1"/><rect x="10" y="2" width="1" height="3"/><rect x="3" y="6" width="7" height="1"/><rect x="3" y="5" width="1" height="3"/><rect x="2" y="6" width="1" height="1"/><rect x="1" y="2" width="1" height="3"/></svg>
+            <svg class="icon-repeat-one" viewBox="0 0 12 9" fill="currentColor" shape-rendering="crispEdges"><rect x="2" y="1" width="7" height="1"/><rect x="8" y="0" width="1" height="3"/><rect x="9" y="1" width="1" height="1"/><rect x="10" y="2" width="1" height="3"/><rect x="3" y="6" width="7" height="1"/><rect x="3" y="5" width="1" height="3"/><rect x="2" y="6" width="1" height="1"/><rect x="1" y="2" width="1" height="3"/><rect x="6" y="2" width="1" height="4"/><rect x="5" y="3" width="1" height="1"/></svg>
           </button>
         </div>
+        <div class="player-msg" id="player-msg"></div>
       </div>
-      <div class="player-msg" id="player-msg"></div>
     </div>
 
     <button class="nav-btn" id="nav-btn"></button>
@@ -1261,12 +1308,13 @@
       const USAGE_ICON =
         '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>';
       const PLAY_ICON =
-        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>';
+        '<svg viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="10"/><rect x="3" y="1" width="2" height="8"/><rect x="5" y="2" width="2" height="6"/><rect x="7" y="3" width="2" height="4"/><rect x="9" y="4" width="1" height="2"/></svg>';
       const PAUSE_ICON =
-        '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
-
-      const EMPTY_IMAGE =
-        "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+        '<svg viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="0" width="3" height="10"/><rect x="6" y="0" width="3" height="10"/></svg>';
+      const PLAYING_LABEL =
+        '<svg viewBox="0 0 6 7" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="7"/><rect x="2" y="1" width="2" height="5"/><rect x="4" y="2" width="2" height="3"/></svg><span>Playing</span>';
+      const PAUSED_LABEL =
+        '<svg viewBox="0 0 6 7" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="7"/><rect x="4" y="0" width="2" height="7"/></svg><span>Paused</span>';
 
       let playerVisible = false;
 
@@ -1290,6 +1338,18 @@
         .addEventListener("click", () => setPlayerVisible(!playerVisible));
 
       const playerScreen = document.getElementById("player-screen");
+
+      function fitDeck() {
+        const scale = Math.min(
+          playerScreen.clientWidth / 800,
+          playerScreen.clientHeight / 480,
+        );
+        document.getElementById("deck").style.setProperty("--deck-scale", scale);
+      }
+
+      window.addEventListener("resize", fitDeck);
+      fitDeck();
+
       let swipeStartX = null;
 
       document.body.addEventListener("pointerdown", (ev) => {
@@ -1336,12 +1396,119 @@
         }, 5000);
       }
 
+      const DISC_SIZE = 56;
+      const DISC_FRAMES = 32;
+      const COVER_SIZE = 64;
+      const DISC_RIM = [14, 13, 18];
+      const DISC_HOLE = [32, 30, 27];
+      const DISC_LABEL = [46, 43, 39];
+      const DISC_GROOVES = [
+        [38, 37, 49],
+        [23, 22, 29],
+      ];
+
+      const discCtx = document.getElementById("disc").getContext("2d");
+      let discFrame = 0;
+      let coverUrl = null;
+      let coverPixels = null;
+
+      function drawDisc() {
+        const n = DISC_SIZE;
+        const c = (n - 1) / 2;
+        const r = n / 2;
+        const labelR = r * 0.62;
+        const angle = (-discFrame * Math.PI * 2) / DISC_FRAMES;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const image = discCtx.createImageData(n, n);
+
+        for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+            const dx = x - c;
+            const dy = y - c;
+            const d = Math.hypot(dx, dy);
+            if (d > r - 0.2) continue;
+
+            let rgb;
+            if (d > r - 1.4) rgb = DISC_RIM;
+            else if (d < 1.4) rgb = DISC_HOLE;
+            else if (d < labelR) {
+              if (d > labelR - 1) rgb = DISC_RIM;
+              else if (!coverPixels) rgb = DISC_LABEL;
+              else {
+                const rx = dx * cos - dy * sin;
+                const ry = dx * sin + dy * cos;
+                const u = Math.min(COVER_SIZE - 1, Math.max(0, Math.floor(((rx / labelR + 1) / 2) * COVER_SIZE)));
+                const v = Math.min(COVER_SIZE - 1, Math.max(0, Math.floor(((ry / labelR + 1) / 2) * COVER_SIZE)));
+                const i = (v * COVER_SIZE + u) * 4;
+                rgb = [coverPixels[i], coverPixels[i + 1], coverPixels[i + 2]];
+              }
+            } else rgb = DISC_GROOVES[Math.floor(d) % 2];
+
+            if (d >= labelR + 1 && d <= r - 2) {
+              const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
+              if (Math.abs(deg + 45) < 7 || Math.abs(deg - 135) < 7) {
+                rgb = rgb.map((value) => value + (255 - value) * 0.12);
+              }
+            }
+
+            const o = (y * n + x) * 4;
+            image.data[o] = rgb[0];
+            image.data[o + 1] = rgb[1];
+            image.data[o + 2] = rgb[2];
+            image.data[o + 3] = 255;
+          }
+        }
+
+        discCtx.putImageData(image, 0, 0);
+      }
+
+      function loadCover(url) {
+        if (url === coverUrl) return;
+        coverUrl = url;
+        coverPixels = null;
+        drawDisc();
+        if (!url) return;
+
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          if (url !== coverUrl) return;
+          const canvas = document.createElement("canvas");
+          canvas.width = COVER_SIZE;
+          canvas.height = COVER_SIZE;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, COVER_SIZE, COVER_SIZE);
+          coverPixels = ctx.getImageData(0, 0, COVER_SIZE, COVER_SIZE).data;
+          drawDisc();
+        };
+        img.src = url;
+      }
+
+      const tonearm = document.getElementById("tonearm");
+      for (let i = 0; i <= 14; i++) {
+        const block = document.createElement("div");
+        block.style.left = `${Math.round((-22 * i) / 14) - 3}px`;
+        block.style.top = `${Math.round((84 * i) / 14) - 3}px`;
+        tonearm.prepend(block);
+      }
+
+      function renderPlayState() {
+        const playing = !!player?.is_playing;
+        document.getElementById("play-btn").innerHTML = playing
+          ? PAUSE_ICON
+          : PLAY_ICON;
+        tonearm.classList.toggle("on", playing);
+        const state = document.getElementById("play-state");
+        state.classList.toggle("paused", !playing);
+        state.innerHTML = !player ? "" : playing ? PLAYING_LABEL : PAUSED_LABEL;
+      }
+
       function renderSeek() {
         const pct = player?.duration_ms
           ? Math.min(100, (player.progress_ms / player.duration_ms) * 100)
           : 0;
         document.getElementById("seek-fill").style.width = pct + "%";
-        document.getElementById("seek-thumb").style.left = pct + "%";
         document.getElementById("time-current").textContent = formatTime(
           player?.progress_ms ?? 0,
         );
@@ -1352,7 +1519,6 @@
 
       function renderPlayer(data) {
         const screen = document.getElementById("player-screen");
-        const art = document.getElementById("player-art");
         const hasTrack = data.connected && data.track;
         player = hasTrack ? data : null;
         screen.classList.toggle("idle", !hasTrack);
@@ -1362,26 +1528,20 @@
             "Spotify not connected";
           document.getElementById("player-artist").textContent =
             "Open 127.0.0.1:3333/spotify/login";
+          document.getElementById("player-album").textContent = "";
         } else if (!data.track) {
           document.getElementById("player-track").textContent =
             "Nothing playing";
           document.getElementById("player-artist").textContent = "";
+          document.getElementById("player-album").textContent = "";
         } else {
           document.getElementById("player-track").textContent = data.track;
-          document.getElementById("player-artist").textContent = data.album
-            ? `${data.artist} · ${data.album}`
-            : data.artist;
+          document.getElementById("player-artist").textContent = data.artist;
+          document.getElementById("player-album").textContent = data.album;
         }
 
-        if (hasTrack && data.image) {
-          if (art.getAttribute("src") !== data.image) art.src = data.image;
-        } else {
-          art.src = EMPTY_IMAGE;
-        }
-
-        document.getElementById("play-btn").innerHTML = data.is_playing
-          ? PAUSE_ICON
-          : PLAY_ICON;
+        loadCover(hasTrack ? data.image : null);
+        renderPlayState();
 
         const shuffleBtn = document.getElementById("shuffle-btn");
         shuffleBtn.classList.toggle("on", !!(data.shuffle || data.smart_shuffle));
@@ -1431,9 +1591,7 @@
       document.getElementById("play-btn").addEventListener("click", () => {
         if (!player) return;
         player.is_playing = !player.is_playing;
-        document.getElementById("play-btn").innerHTML = player.is_playing
-          ? PAUSE_ICON
-          : PLAY_ICON;
+        renderPlayState();
         sendCommand(player.is_playing ? "play" : "pause");
       });
 
@@ -1490,7 +1648,15 @@
         if (playerVisible) fetchPlayer();
       }, 3000);
 
+      setInterval(() => {
+        if (!playerVisible || !player?.is_playing) return;
+        discFrame = (discFrame + 1) % DISC_FRAMES;
+        drawDisc();
+      }, 150);
+
       renderNav();
+      renderPlayState();
+      drawDisc();
 
       fetchAndRender();
       setInterval(fetchAndRender, 30_000);
