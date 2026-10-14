@@ -344,17 +344,40 @@ app.get('/spotify/recent', async (_req, res) => {
   }
 });
 
-app.post('/spotify/album', async (req, res) => {
-  const body = { context_uri: req.query.value };
+async function play(body) {
   try {
-    try {
-      await spotifyApi('PUT', '/play', body);
-    } catch (err) {
-      if (err.status !== 404) throw err;
-      const { devices } = await spotifyApi('GET', '/devices');
-      if (!devices?.length) throw new SpotifyError('No Spotify device available', 404);
-      await spotifyApi('PUT', `/play?device_id=${encodeURIComponent(devices[0].id)}`, body);
-    }
+    await spotifyApi('PUT', '/play', body);
+  } catch (err) {
+    if (err.status !== 404) throw err;
+    const { devices } = await spotifyApi('GET', '/devices');
+    if (!devices?.length) throw new SpotifyError('No Spotify device available', 404);
+    await spotifyApi('PUT', `/play?device_id=${encodeURIComponent(devices[0].id)}`, body);
+  }
+}
+
+app.post('/spotify/album', async (req, res) => {
+  try {
+    await play({ context_uri: req.query.value });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
+});
+
+app.post('/spotify/track', async (req, res) => {
+  try {
+    await play({ uris: [req.query.value] });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
+});
+
+app.post('/spotify/guitar', async (_req, res) => {
+  const id = process.env.SPOTIFY_GUITAR_PLAYLIST?.match(/playlist[/:]([A-Za-z0-9]+)/)?.[1];
+  if (!id) return res.status(500).json({ message: 'SPOTIFY_GUITAR_PLAYLIST must be set in .env' });
+  try {
+    await play({ context_uri: `spotify:playlist:${id}` });
     res.json({ ok: true });
   } catch (err) {
     res.status(err.status || 500).json({ message: err.message });

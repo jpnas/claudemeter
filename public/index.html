@@ -765,16 +765,17 @@
       }
 
       .shelf-cat {
-        top: 431px;
-        width: 70px;
-        height: 45px;
+        cursor: pointer;
+        top: 425px;
+        width: 66px;
+        height: 51px;
         display: none;
       }
 
       .shelf-glow {
         inset: -400px;
         pointer-events: none;
-        background: radial-gradient(circle at 1174px 540px, rgba(255, 170, 90, 0.28), rgba(255, 170, 90, 0.08) 220px, rgba(5, 8, 25, 0.25) 520px);
+        background: radial-gradient(circle at 1176px 552px, rgba(255, 170, 90, 0.28), rgba(255, 170, 90, 0.08) 220px, rgba(5, 8, 25, 0.25) 520px);
       }
 
       .shelf-note {
@@ -798,6 +799,23 @@
         border: 0;
         background: transparent;
         cursor: pointer;
+      }
+
+      .shelf.day .night-only,
+      .shelf:not(.day) .day-only {
+        display: none;
+      }
+
+      .shelf:not(.day) .wall {
+        filter: brightness(0.42);
+      }
+
+      .shelf.day .lamp-shade {
+        filter: brightness(0.78) saturate(0.5);
+      }
+
+      .shelf.day .shelf-glow {
+        background: radial-gradient(circle at 800px 540px, rgba(255, 250, 230, 0.16), transparent 360px);
       }
 
       .twinkle {
@@ -1941,7 +1959,7 @@
       }
 
       function shelfFloor() {
-        block(-400, -400, 1600, 824, "repeating-linear-gradient(90deg, #15151d 0 16px, #191922 16px 24px)");
+        block(-400, -400, 1600, 824, "repeating-linear-gradient(90deg, #34344a 0 16px, #3c3c52 16px 24px)", "wall");
         block(-400, 424, 1600, 6, "#1a1411");
         block(-400, 430, 1600, 450, "#3a291c");
         for (let y = 444; y < 880; y += 14) block(-400, y, 1600, 2, "#2e2016");
@@ -1951,24 +1969,36 @@
 
       function shelfWindow() {
         block(240, 14, 320, 238, "#3a2716");
-        block(248, 22, 304, 230, "#0b1026");
-        block(248, 150, 304, 50, "#0e1430");
-        block(248, 200, 304, 52, "#131a38");
+        block(248, 22, 304, 230, "#0b1026", "night-only");
+        block(248, 150, 304, 50, "#0e1430", "night-only");
+        block(248, 200, 304, 52, "#131a38", "night-only");
+        block(248, 22, 304, 230, "#6fb7e0", "day-only");
+        block(248, 120, 304, 70, "#86c5e6", "day-only");
+        block(248, 190, 304, 62, "#a3d4ec", "day-only");
         [[4, 0, 6], [2, 1, 5], [1, 2, 4], [0, 3, 4], [0, 4, 3], [0, 5, 3], [0, 6, 3], [0, 7, 3], [0, 8, 3], [0, 9, 3], [0, 10, 4], [1, 11, 4], [2, 12, 5], [4, 13, 6]]
-          .forEach(([x, y, w]) => block(500 + x, 36 + y, w, 1, "#f2ebd3"));
+          .forEach(([x, y, w]) => block(500 + x, 36 + y, w, 1, "#f2ebd3", "night-only"));
+        [[4, 0, 8], [2, 1, 12], [1, 2, 14], [0, 4, 16], [0, 10, 16], [1, 12, 14], [2, 13, 12], [4, 14, 8]]
+          .forEach(([x, y, w], i, rows) => {
+            const h = (rows[i + 1]?.[1] ?? 15) - y;
+            block(494 + x, 30 + y, w, h, "#ffd86b", "day-only");
+          });
+        [[268, 50, [[6, 0, 14, 4], [0, 4, 30, 6], [10, -2, 8, 2]]], [330, 88, [[4, 0, 10, 4], [0, 4, 22, 5]]], [430, 40, [[6, 0, 16, 4], [0, 4, 34, 6], [14, -3, 8, 3]]]]
+          .forEach(([cx, cy, parts]) => parts.forEach(([dx, dy, w, h]) => block(cx + dx, cy + dy, w, h, "#f4f8fb", "day-only")));
         [[262, 34], [286, 70], [318, 40], [346, 112], [372, 54], [420, 30], [436, 120], [464, 70], [530, 104], [540, 160], [270, 150], [384, 150]]
           .forEach(([x, y], i) => {
-            block(x, y, 2, 2, "#eee7d7", "twinkle").style.animationDelay = `${(i % 5) * 0.6}s`;
+            block(x, y, 2, 2, "#eee7d7", "twinkle night-only").style.animationDelay = `${(i % 5) * 0.6}s`;
           });
         let bx = 248;
         let bi = 0;
         while (bx < 552) {
           const w = Math.min(552 - bx, 12 + ((bi * 7) % 4) * 4);
           const h = 50 + ((bi * 37) % 7) * 12;
-          block(bx, 252 - h, w, h, "#05070f");
+          block(bx, 252 - h, w, h, "#05070f", "night-only");
+          block(bx, 252 - h, w, h, bi % 2 ? "#6f7d8c" : "#7d8a97", "day-only");
           for (let wy = 252 - h + 6; wy < 246; wy += 8) {
             for (let wx = bx + 3; wx < bx + w - 3; wx += 6) {
-              if ((wx * 7 + wy * 13 + bi * 5) % 9 < 2) block(wx, wy, 3, 3, "#ffd27a");
+              if ((wx * 7 + wy * 13 + bi * 5) % 9 < 2) block(wx, wy, 3, 3, "#ffd27a", "night-only");
+              block(wx, wy, 3, 3, "#55616e", "day-only");
             }
           }
           bx += w;
@@ -1981,21 +2011,32 @@
       }
 
       function shelfBooks(x, y) {
-        block(x + 6, y - 20, 26, 20, "#8a4b2e");
-        block(x + 4, y - 24, 30, 5, "#a35c3a");
-        [[10, -38, 8, 14], [18, -46, 8, 22], [26, -36, 8, 12], [2, -30, 8, 8], [32, -32, 8, 8], [2, -4, 4, 10], [0, 6, 4, 12], [2, 18, 6, 6]]
-          .forEach(([dx, dy, w, h]) => block(x + dx, y + dy, w, h, "#4e7a3a"));
-        [[14, -42, 4, 6], [24, -30, 4, 6], [34, -28, 4, 4], [0, 10, 4, 4]]
-          .forEach(([dx, dy, w, h]) => block(x + dx, y + dy, w, h, "#3b5e2c"));
-        let bx = x + 44;
-        [[9, 47, "#3f2a2e", "#c9a57e"], [8, 49, "#2b3340", "#a39c8f"], [10, 36, "#5a4636", "#eee7d7"], [7, 41, "#2f3a2c", "#cfc8ba"], [11, 52, "#6b3a2e", "#e9c9a0"], [9, 50, "#1e1e22", "#ff7a2f"], [8, 38, "#44506a", "#eee7d7"]]
+        ["..########..", "..#e####e#..", "############", "############", "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#.."]
+          .forEach((row, ry) =>
+            [...row].forEach((ch, rx) => {
+              if (ch !== ".") block(x - 4 + rx * 4, y - 32 + ry * 4, 4, 4, ch === "e" ? "#1c1a19" : "#d97757");
+            }),
+          );
+        let bx = x + 52;
+        [[9, 47, "#3f2a2e", "#c9a57e"], [8, 49, "#2b3340", "#a39c8f"], [10, 36, "#5a4636", "#eee7d7"], [7, 41, "#2f3a2c", "#cfc8ba"], [11, 52, "#6b3a2e", "#e9c9a0"], [9, 50, "#44506a", "#eee7d7"]]
           .forEach(([w, h, c, band]) => {
             block(bx, y - h, w, h, c);
             block(bx, y - h + 6, w, 3, band);
             bx += w;
           });
-        block(bx + 2, y - 12, 18, 12, "#3f2a2e");
-        block(bx + 3, y - 20, 16, 8, "#5a4636");
+        const px = bx + 4;
+        block(px + 6, y - 20, 26, 20, "#8a4b2e");
+        block(px + 4, y - 24, 30, 5, "#a35c3a");
+        [[10, -38, 8, 14], [18, -46, 8, 22], [26, -36, 8, 12], [2, -30, 8, 8], [32, -32, 8, 8], [2, -4, 4, 10], [0, 6, 4, 12], [2, 18, 6, 6]]
+          .forEach(([dx, dy, w, h]) => block(px + dx, y + dy, w, h, "#4e7a3a"));
+        [[14, -42, 4, 6], [24, -30, 4, 6], [34, -28, 4, 4], [0, 10, 4, 4]]
+          .forEach(([dx, dy, w, h]) => block(px + dx, y + dy, w, h, "#3b5e2c"));
+        const hit = document.createElement("button");
+        hit.className = "shelf-hit";
+        hit.setAttribute("aria-label", "Open usage");
+        hit.style.cssText = `left:${x}px;top:${y - 52}px;width:${px + 40 - x}px;height:52px`;
+        hit.addEventListener("click", () => setPlayerVisible(false));
+        shelf.appendChild(hit);
       }
 
       function drawGuitar(ctx, cx, base) {
@@ -2024,11 +2065,11 @@
         ctx.stroke();
         ctx.fillStyle = "#7a5a3a";
         ctx.beginPath();
-        ctx.arc(cx, base - 66, 8, 0, Math.PI * 2);
+        ctx.arc(cx, base - 60, 11, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#1c1a19";
         ctx.beginPath();
-        ctx.arc(cx, base - 66, 5, 0, Math.PI * 2);
+        ctx.arc(cx, base - 60, 8, 0, Math.PI * 2);
         ctx.fill();
         rect(cx - 14, base - 28, 28, 6, "#4a321f");
         rect(cx - 12, base - 26, 24, 2, "#c9a57e");
@@ -2054,28 +2095,65 @@
         const spriteCtx = sprite.getContext("2d");
         spriteCtx.scale(4, 4);
         drawGuitar(spriteCtx, 40, 202);
+        const hi = document.createElement("canvas");
+        hi.width = 640;
+        hi.height = 1000;
+        const hiCtx = hi.getContext("2d");
+        hiCtx.imageSmoothingQuality = "high";
+        hiCtx.scale(4, 4);
+        hiCtx.translate(80, 232);
+        hiCtx.rotate(Math.asin((57 - x) / (184 * 1.1)));
+        hiCtx.scale(1.1 / 4, 1.1 / 4);
+        hiCtx.drawImage(sprite, -160, -808);
         const el = document.createElement("canvas");
-        el.width = 480;
-        el.height = 750;
-        el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none;image-rendering:auto`;
+        el.width = 80;
+        el.height = 125;
+        el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none`;
         const ctx = el.getContext("2d");
         ctx.imageSmoothingQuality = "high";
-        ctx.scale(3, 3);
-        ctx.translate(80, 232);
-        ctx.rotate(Math.asin((57 - x) / (184 * 1.1)));
-        ctx.scale(1.1 / 4, 1.1 / 4);
-        ctx.drawImage(sprite, -160, -808);
+        ctx.drawImage(hi, 0, 0, 80, 125);
+        const pixels = ctx.getImageData(0, 0, 80, 125);
+        for (let i = 3; i < pixels.data.length; i += 4) pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
+        ctx.putImageData(pixels, 0, 0);
         shelf.appendChild(el);
+        const hit = document.createElement("button");
+        hit.className = "shelf-hit";
+        hit.setAttribute("aria-label", "Play Guitar playlist");
+        hit.style.cssText = `left:${x - 30}px;top:${base - 196}px;width:94px;height:196px`;
+        hit.addEventListener("click", () => playFromShelf("/spotify/guitar"));
+        shelf.appendChild(hit);
       }
 
       function shelfLamp(x, base) {
-        block(x + 22, 160, 4, base - 166, "#3a3631");
+        block(x + 22, 172, 4, base - 178, "#3a3631");
         block(x + 10, base - 8, 28, 8, "#2a2723");
-        block(x + 12, 112, 24, 8, "#e9c9a0");
-        block(x + 8, 120, 32, 10, "#e9c9a0");
-        block(x + 4, 130, 40, 12, "#f2d6b0");
-        block(x, 142, 48, 14, "#f7e2c2");
-        block(x, 156, 48, 4, "#c9a57e");
+        block(x + 12, 124, 24, 8, "#e9c9a0", "lamp-shade");
+        block(x + 8, 132, 32, 10, "#e9c9a0", "lamp-shade");
+        block(x + 4, 142, 40, 12, "#f2d6b0", "lamp-shade");
+        block(x, 154, 48, 14, "#f7e2c2", "lamp-shade");
+        block(x, 168, 48, 4, "#c9a57e", "lamp-shade");
+        const lampHit = document.createElement("button");
+        lampHit.className = "shelf-hit";
+        lampHit.setAttribute("aria-label", "Toggle day and night");
+        lampHit.style.cssText = `left:${x}px;top:124px;width:48px;height:48px`;
+        lampHit.addEventListener("click", () => {
+          shelfDayOverride = !shelf.classList.contains("day");
+          renderDayNight();
+        });
+        shelf.appendChild(lampHit);
+      }
+
+      let shelfDayOverride = null;
+      let shelfAutoDay = null;
+
+      function renderDayNight() {
+        const hour = new Date().getHours();
+        const autoDay = hour >= 6 && hour < 18;
+        if (autoDay !== shelfAutoDay) {
+          shelfAutoDay = autoDay;
+          shelfDayOverride = null;
+        }
+        shelf.classList.toggle("day", shelfDayOverride ?? autoDay);
       }
 
       const speaker = document.createElement("canvas");
@@ -2172,7 +2250,7 @@
 
           shelfSlots.push({ x, y, peek, button, art, rec: null, img: null });
         });
-        [[64, 242, 672], [64, 392, 672], [604, 100, 136], [32, 100, 176]].forEach(([x, y, w]) => {
+        [[64, 242, 672], [64, 392, 672], [592, 100, 176], [32, 100, 176]].forEach(([x, y, w]) => {
           block(x, y + 20, w, 8, "rgba(0,0,0,0.3)");
           block(x, y, w, 20, "#5c3f26");
           block(x, y, w, 4, "#8a6240");
@@ -2183,9 +2261,9 @@
           });
         });
         shelfTop(39, 100);
-        shelfBooks(608, 100);
+        shelfBooks(605, 100);
         shelfGuitar(4, 446);
-        shelfLamp(750, 442);
+        shelfLamp(752, 442);
         cat.className = "shelf-cat";
         shelf.appendChild(cat);
         shelf.appendChild(document.createElement("div")).className = "shelf-glow";
@@ -2290,83 +2368,111 @@
         setTimeout(fetchPlayer, 600);
       }
 
-      const CAT_TOP = [
-        "......................k...k.",
-        ".k...................kk..kk.",
-        ".k...................kkkkkk.",
-        "..k.................kkkkkkk.",
-        "..k.................kekkkek.",
-        "..k.................kkknkkk.",
-        "..k.................wkkkkkw.",
-        "...k...............kkkkkk...",
-        "....kkkkkkkkkkkkkkkkkkkk....",
-        "....kkkdkkkdkkkdkkkkkkkw....",
-        "....kkkdkkkdkkkdkkkkkkww....",
-        "....kkkkkkkkkkkkkkkkkkww....",
-        ".....kkkkkkkkkkkkkkkkkw.....",
-      ];
       const CAT_WALK = [
-        CAT_TOP.concat([
-          ".....kk.kk.........kk.kk....",
-          ".....kk..kk.......kk...kk...",
-          "....kk....kk.....kk.....kk..",
-          "....kk....kk.....kk.....kk..",
-          "...ww.....ww....ww......ww..",
-        ]),
-        CAT_TOP.concat([
-          "......kkkk..........kkkk....",
-          "......kkkk..........kkkk....",
-          "......kk.kk........kk.kk....",
-          "......kk.kk........kk.kk....",
-          "......ww.ww........ww.ww....",
-        ]),
+        [
+          ".dd...................",
+          ".td.........tt.....tt.",
+          "..tt........ttt...ttt.",
+          "..tt........ttdtdtdtt.",
+          "..tt........ttttwtttt.",
+          "..tt........twewwwewt.",
+          "..tt.......kwwwwnwwwwk",
+          "..ttttttttttwwwwwwwww.",
+          "..ttdttdttdtwwwwwww...",
+          "..tttdttdtttwwwwwww...",
+          "..ttooottttwwwwwwww...",
+          "..twoowwwwwwwwwwwww...",
+          "...wwwwwwwwwwwwwww....",
+          "....wwwwwwwwwwwww.....",
+          "...ss.ww.....ww.ss....",
+          "..ss....ww.ww.....ss..",
+          "..ss....ww.ww.....ss..",
+        ],
+        [
+          "..dd..................",
+          "..td........tt.....tt.",
+          "..tt........ttt...ttt.",
+          "..tt........ttdtdtdtt.",
+          "..tt........ttttwtttt.",
+          "..tt........twewwwewt.",
+          "..tt.......kwwwwnwwwwk",
+          "..ttttttttttwwwwwwwww.",
+          "..ttdttdttdtwwwwwww...",
+          "..tttdttdtttwwwwwww...",
+          "..ttooottttwwwwwwww...",
+          "..twoowwwwwwwwwwwww...",
+          "...wwwwwwwwwwwwwww....",
+          "....wwwwwwwwwwwww.....",
+          "....ss.ww....ww.ss....",
+          "....ss.ww....ww.ss....",
+          "....ss.ww....ww.ss....",
+        ],
       ];
-      const CAT_SIT_HEAD = [
-        ".................k...k......",
-        ".................kk.kk......",
-        ".................kkkkk......",
-        "................kkkkkkk.....",
-        "................kekkkek.....",
-        "................kkknkkk.....",
-        ".................wkkkw......",
+      const CAT_SIT = [
+        "......................",
+        "......................",
+        "............tt.....tt.",
+        "............ttt...ttt.",
+        "............ttdtdtdtt.",
+        "............ttttwtttt.",
+        "............twewwwewt.",
+        "...........kwwwwnwwwwk",
+        "........ttttwwwwwwwww.",
+        ".......ttdttwwwwwww...",
+        "......ttdttdwwwwwww...",
+        ".....tttdtttwwwwwww...",
+        ".....ttooottwwwwwww...",
+        ".....tttoootwwwwwww...",
+        ".....ttttttwwwww.ww...",
+        ".....wwwwwwwwwww.ww...",
+        "dttttwwwwwwww.ww.ww...",
       ];
-      const CAT_SIT_BODY = [
-        "..........kkkkkkkkkkww......",
-        ".........kkkkkkkkkkkww......",
-        "........kkkdkkkdkkkkww......",
-        "........kkkdkkkdkkkkww......",
-        ".......kkkkkkkkkkkkkww......",
-        ".......kkkkkkkkkkkkkkk......",
-        ".......kkkkkkkkkk.kk.kk.....",
-        ".......kkkkkkkkkk.kk.kk.....",
-        ".......kkkkkkkkkk.kk.kk.....",
-        "..kkkkkkkkkkkkkkk.kk.kk.....",
-        ".kkkkkwwwwwww.....ww.ww.....",
-      ];
-      const CAT_PAW_BODY = CAT_SIT_BODY.map((row, y) => (y >= 6 ? row.slice(0, 20) + "........" : row));
-
-      function catFrame(body, headDy, extra) {
-        const rows = Array.from({ length: 18 }, () => Array(28).fill("."));
-        const put = (y, x, str) =>
-          [...str].forEach((c, i) => {
-            if (c !== "." && rows[y]) rows[y][x + i] = c;
-          });
-        body.forEach((row, y) => put(y + 7, 0, row));
-        CAT_SIT_HEAD.forEach((row, y) => put(y + headDy, 0, row));
-        extra.forEach(([y, x, str]) => put(y, x, str));
-        return rows.map((row) => row.join(""));
-      }
-
-      const CAT_SIT = catFrame(CAT_SIT_BODY, 0, []);
       const CAT_LICK = [
-        catFrame(CAT_PAW_BODY, 0, [[5, 23, "ww"], [6, 23, "ww"], [7, 22, "k"], [8, 22, "k"], [9, 22, "k"], [10, 21, "k"]]),
-        catFrame(CAT_PAW_BODY, 1, [[5, 23, "ww"], [6, 23, "ww"], [7, 22, "k"], [8, 22, "k"], [9, 22, "k"], [10, 21, "k"], [6, 22, "n"]]),
+        [
+          "......................",
+          "......................",
+          "............tt.....tt.",
+          "............ttt...ttt.",
+          "............ttdtdtdtt.",
+          "............ttttwtttt.",
+          "............twewwwewt.",
+          "...........kwwwwnwwwss",
+          "........ttttwwwwwwwwws",
+          ".......ttdttwwwwwwws..",
+          "......ttdttdwwwwwws...",
+          ".....tttdtttwwwwwsw...",
+          ".....ttooottwwwwwww...",
+          ".....tttoootwwwwwww...",
+          ".....ttttttwwwww......",
+          ".....wwwwwwwwwww......",
+          "dttttwwwwwwww.ww......",
+        ],
+        [
+          "......................",
+          "......................",
+          "......................",
+          "............tt.....tt.",
+          "............ttt...ttt.",
+          "............ttdtdtdtt.",
+          "............ttttwtttt.",
+          "............twewwwewss",
+          "........tttkwwwwnwwwws",
+          ".......ttdttwwwwwwnsw.",
+          "......ttdttdwwwwwws...",
+          ".....tttdtttwwwwwsw...",
+          ".....ttooottwwwwwww...",
+          ".....tttoootwwwwwww...",
+          ".....ttttttwwwww......",
+          ".....wwwwwwwwwww......",
+          "dttttwwwwwwww.ww......",
+        ],
       ];
-      const CAT_COLORS = { k: "#d98a4a", d: "#a8602c", w: "#f2d6b0", e: "#1c1a19", n: "#e7b7c8" };
+      const CAT_COLORS = { t: "#7a6f63", d: "#3f3832", w: "#eeeae2", s: "#bdb6aa", o: "#c98a4a", e: "#1c1a19", n: "#e7a0a8", k: "#cfc8ba" };
       const cat = document.createElement("canvas");
-      cat.width = 28;
-      cat.height = 18;
+      cat.width = 22;
+      cat.height = 17;
       const catCtx = cat.getContext("2d");
+      cat.addEventListener("click", () => playFromShelf(`/spotify/track?value=${encodeURIComponent("spotify:track:4ls5LcW90peNWMSqneNLDS")}`));
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
       function drawCat(rows) {
@@ -2438,6 +2544,27 @@
         closeShelf();
       });
 
+      async function playFromShelf(url) {
+        if (shelfBusy) return;
+        shelfBusy = true;
+        shelfHoldUntil = Date.now() + 8000;
+        const res = await fetch(url, { method: "POST" }).catch((e) => ({ ok: false, json: async () => ({ message: e.message }) }));
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          showPlayerMsg(body.message || `HTTP ${res.status}`);
+          shelfHoldUntil = 0;
+          shelfBusy = false;
+          return;
+        }
+        shelf.classList.add("leaving");
+        await new Promise((r) => setTimeout(r, 400));
+        shelfBrowse = false;
+        shelfBusy = false;
+        document.getElementById("player-screen").classList.remove("shelf-on");
+        renderHome();
+        fetchPlayer();
+      }
+
       async function closeShelf() {
         if (shelfBusy) return;
         shelfBusy = true;
@@ -2488,6 +2615,8 @@
       }, 900);
 
       buildShelf();
+      renderDayNight();
+      setInterval(renderDayNight, 60_000);
       scheduleCat(8000);
 
       renderNav();
