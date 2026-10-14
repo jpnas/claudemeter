@@ -378,15 +378,6 @@
         transform: translate(-50%, -50%) scale(var(--deck-scale, 1));
       }
 
-      .platter {
-        position: absolute;
-        left: 24px;
-        top: 24px;
-        width: 290px;
-        height: 290px;
-        background: #201e1b;
-      }
-
       .disc {
         position: absolute;
         left: 29px;
@@ -522,7 +513,7 @@
       .progress {
         position: absolute;
         left: 24px;
-        top: 330px;
+        top: 326px;
         width: 752px;
         display: flex;
         flex-direction: column;
@@ -563,7 +554,7 @@
       .controls {
         position: absolute;
         left: 24px;
-        top: 390px;
+        top: 398px;
         width: 752px;
         height: 76px;
         display: flex;
@@ -603,6 +594,7 @@
       }
 
       .ctl.toggle {
+        position: relative;
         width: 72px;
         color: #6f6a62;
       }
@@ -614,6 +606,10 @@
 
       .ctl.toggle::after {
         content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%);
         width: 6px;
         height: 6px;
       }
@@ -737,6 +733,22 @@
         width: 32px;
         height: 32px;
       }
+
+      .nav-btn.retro,
+      .nav-btn.retro:active {
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .nav-btn.retro svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .nav-btn.retro:active .frame {
+        fill: #ff7a2f;
+      }
     </style>
   </head>
   <body>
@@ -810,7 +822,6 @@
 
     <div id="player-screen">
       <div class="deck" id="deck">
-        <div class="platter"></div>
         <canvas class="disc" id="disc" width="56" height="56"></canvas>
         <div class="tonearm" id="tonearm"><div class="headshell"></div></div>
         <div class="pivot"></div>
@@ -1303,10 +1314,12 @@
       }
 
       /* ── Screen switch ── */
+      const NAV_FRAME =
+        '<g class="frame" fill="#3a3631"><rect x="1" y="0" width="14" height="16"/><rect x="0" y="1" width="16" height="14"/></g><g fill="#201e1b"><rect x="2" y="1" width="12" height="14"/><rect x="1" y="2" width="14" height="12"/></g>';
       const MUSIC_ICON =
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
       const USAGE_ICON =
-        '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>';
+        '<svg viewBox="0 0 16 16" shape-rendering="crispEdges">' + NAV_FRAME + '<g fill="#6f6a62"><rect x="4" y="9" width="2" height="3"/><rect x="7" y="6" width="2" height="6"/><rect x="10" y="3" width="2" height="9"/></g></svg>';
       const PLAY_ICON =
         '<svg viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="10"/><rect x="3" y="1" width="2" height="8"/><rect x="5" y="2" width="2" height="6"/><rect x="7" y="3" width="2" height="4"/><rect x="9" y="4" width="1" height="2"/></svg>';
       const PAUSE_ICON =
@@ -1322,7 +1335,9 @@
         document
           .getElementById("player-screen")
           .classList.toggle("active", playerVisible);
-        document.getElementById("nav-btn").innerHTML = playerVisible
+        const navBtn = document.getElementById("nav-btn");
+        navBtn.classList.toggle("retro", playerVisible);
+        navBtn.innerHTML = playerVisible
           ? USAGE_ICON
           : MUSIC_ICON;
       }
