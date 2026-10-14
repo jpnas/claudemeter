@@ -702,7 +702,7 @@
       .shelf {
         display: none;
         position: absolute;
-        inset: 14px 0 -14px;
+        inset: 4px 0 -4px;
         z-index: 4;
       }
 
@@ -766,7 +766,7 @@
 
       .shelf-cat {
         cursor: pointer;
-        top: 425px;
+        top: 435px;
         width: 66px;
         height: 51px;
         display: none;
@@ -775,7 +775,7 @@
       .shelf-glow {
         inset: -400px;
         pointer-events: none;
-        background: radial-gradient(circle at 1176px 552px, rgba(255, 170, 90, 0.28), rgba(255, 170, 90, 0.08) 220px, rgba(5, 8, 25, 0.25) 520px);
+        background: radial-gradient(circle at 1168px 562px, rgba(255, 170, 90, 0.28), rgba(255, 170, 90, 0.08) 220px, rgba(5, 8, 25, 0.25) 520px);
       }
 
       .shelf-note {
@@ -933,6 +933,10 @@
 
       .home-btn.shown {
         display: block;
+      }
+
+      .nav-btn.off {
+        display: none;
       }
 
       .nav-btn.beside-home {
@@ -1548,6 +1552,9 @@
         homeBtn.classList.toggle("shown", shown);
         homeBtn.innerHTML = shelfBrowse ? PLAYER_ICON : HOME_ICON;
         document.getElementById("nav-btn").classList.toggle("beside-home", shown);
+        const onShelf = playerVisible && playerScreen.classList.contains("shelf-on");
+        homeBtn.classList.toggle("off", onShelf);
+        document.getElementById("nav-btn").classList.toggle("off", onShelf);
       }
 
       function setPlayerVisible(visible) {
@@ -1959,11 +1966,11 @@
       }
 
       function shelfFloor() {
-        block(-400, -400, 1600, 824, "repeating-linear-gradient(90deg, #34344a 0 16px, #3c3c52 16px 24px)", "wall");
-        block(-400, 424, 1600, 6, "#1a1411");
-        block(-400, 430, 1600, 450, "#3a291c");
-        for (let y = 444; y < 880; y += 14) block(-400, y, 1600, 2, "#2e2016");
-        [[90, 430], [310, 430], [530, 430], [700, 430], [200, 444], [450, 444], [640, 444], [120, 458], [380, 458], [620, 458]]
+        block(-400, -400, 1600, 834, "#45455f", "wall");
+        block(-400, 434, 1600, 6, "#1a1411");
+        block(-400, 440, 1600, 450, "#3a291c");
+        for (let y = 454; y < 890; y += 14) block(-400, y, 1600, 2, "#2e2016");
+        [[90, 440], [310, 440], [530, 440], [700, 440], [200, 454], [450, 454], [640, 454], [120, 468], [380, 468], [620, 468]]
           .forEach(([x, y]) => block(x, y, 2, 14, "#2e2016"));
       }
 
@@ -2125,17 +2132,19 @@
       }
 
       function shelfLamp(x, base) {
-        block(x + 22, 172, 4, base - 178, "#3a3631");
-        block(x + 10, base - 8, 28, 8, "#2a2723");
-        block(x + 12, 124, 24, 8, "#e9c9a0", "lamp-shade");
-        block(x + 8, 132, 32, 10, "#e9c9a0", "lamp-shade");
-        block(x + 4, 142, 40, 12, "#f2d6b0", "lamp-shade");
-        block(x, 154, 48, 14, "#f7e2c2", "lamp-shade");
-        block(x, 168, 48, 4, "#c9a57e", "lamp-shade");
+        block(x + 22, 182, 4, base - 188, "#8a8781");
+        block(x + 22, 182, 1, base - 188, "#b5b1a9");
+        block(x + 10, base - 8, 28, 8, "#5e5b56");
+        block(x + 10, base - 8, 28, 2, "#8a8781");
+        block(x + 12, 134, 24, 8, "#e9c9a0", "lamp-shade");
+        block(x + 8, 142, 32, 10, "#e9c9a0", "lamp-shade");
+        block(x + 4, 152, 40, 12, "#f2d6b0", "lamp-shade");
+        block(x, 164, 48, 14, "#f7e2c2", "lamp-shade");
+        block(x, 178, 48, 4, "#c9a57e", "lamp-shade");
         const lampHit = document.createElement("button");
         lampHit.className = "shelf-hit";
         lampHit.setAttribute("aria-label", "Toggle day and night");
-        lampHit.style.cssText = `left:${x}px;top:124px;width:48px;height:48px`;
+        lampHit.style.cssText = `left:${x}px;top:134px;width:48px;height:48px`;
         lampHit.addEventListener("click", () => {
           shelfDayOverride = !shelf.classList.contains("day");
           renderDayNight();
@@ -2250,7 +2259,7 @@
 
           shelfSlots.push({ x, y, peek, button, art, rec: null, img: null });
         });
-        [[64, 242, 672], [64, 392, 672], [592, 100, 176], [32, 100, 176]].forEach(([x, y, w]) => {
+        [[64, 242, 672], [64, 392, 672], [592, 84, 176], [32, 84, 176]].forEach(([x, y, w]) => {
           block(x, y + 20, w, 8, "rgba(0,0,0,0.3)");
           block(x, y, w, 20, "#5c3f26");
           block(x, y, w, 4, "#8a6240");
@@ -2260,10 +2269,10 @@
             block(bx, y + 24, 4, 8, "#2a2723");
           });
         });
-        shelfTop(39, 100);
-        shelfBooks(605, 100);
-        shelfGuitar(4, 446);
-        shelfLamp(752, 442);
+        shelfTop(39, 84);
+        shelfBooks(605, 84);
+        shelfGuitar(4, 456);
+        shelfLamp(744, 452);
         cat.className = "shelf-cat";
         shelf.appendChild(cat);
         shelf.appendChild(document.createElement("div")).className = "shelf-glow";
@@ -2329,7 +2338,7 @@
 
         const disc = discCtx.canvas;
         const startX = slot.x + 8 + 84 - 29;
-        const startY = slot.y + 14 + 8 - 29;
+        const startY = slot.y + 4 + 8 - 29;
         disc.classList.add("flying");
         disc.style.transform = `translate(${startX}px, ${startY}px) scale(${96 / 280})`;
         slot.peek.style.visibility = "hidden";
@@ -2356,6 +2365,7 @@
 
         disc.classList.remove("flying", "landing");
         document.getElementById("player-screen").classList.remove("shelf-on");
+        renderHome();
         renderPlayState();
 
         const res = await request.catch((e) => ({ ok: false, json: async () => ({ message: e.message }) }));
@@ -2530,9 +2540,9 @@
           shelfBusy = true;
           await loadRecent();
           shelfBrowse = true;
-          renderHome();
           shelf.classList.add("leaving");
           screen.classList.add("shelf-on");
+          renderHome();
           void shelf.offsetWidth;
           shelf.classList.add("entering");
           shelf.classList.remove("leaving");
@@ -2601,7 +2611,7 @@
         const note = document.createElement("div");
         note.className = "shelf-note";
         note.style.left = `${161 + Math.round(Math.random() * 24)}px`;
-        note.style.top = "34px";
+        note.style.top = "18px";
         note.style.setProperty("--drift", `${Math.round(Math.random() * 32 - 16)}px`);
         const [w, rects] = nextNote();
         note.style.width = `${w * 2}px`;
