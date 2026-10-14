@@ -688,6 +688,7 @@
 
       .player-msg {
         position: absolute;
+        z-index: 6;
         left: 24px;
         right: 100px;
         top: 6px;
@@ -695,6 +696,124 @@
         font-size: 14px;
         color: #ff7a2f;
         letter-spacing: 0.5px;
+      }
+
+      .shelf {
+        display: none;
+        position: absolute;
+        inset: 14px 0 -14px;
+        z-index: 4;
+      }
+
+      #player-screen.shelf-on .shelf {
+        display: block;
+      }
+
+      .shelf.leaving {
+        opacity: 0;
+        transition: opacity 0.4s steps(5);
+      }
+
+      .shelf.entering {
+        transition: opacity 0.4s steps(5);
+      }
+
+      .shelf div,
+      .shelf canvas {
+        position: absolute;
+      }
+
+      .shelf canvas {
+        image-rendering: pixelated;
+      }
+
+      .shelf-cover {
+        position: absolute;
+        width: 112px;
+        height: 112px;
+        padding: 0;
+        border: 0;
+        background: #2e2b27;
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        transition: transform 0.15s steps(2);
+      }
+
+      .shelf-cover canvas {
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .shelf-cover.picked {
+        z-index: 2;
+        outline: 3px solid #ff7a2f;
+        outline-offset: -3px;
+      }
+
+      .shelf-peek {
+        width: 96px;
+        height: 96px;
+        transition: transform 0.3s steps(5);
+      }
+
+      .shelf-peek.out {
+        z-index: 1;
+        transform: translateX(84px);
+      }
+
+      .shelf-cat {
+        top: 431px;
+        width: 70px;
+        height: 45px;
+        display: none;
+      }
+
+      .shelf-glow {
+        inset: -400px;
+        pointer-events: none;
+        background: radial-gradient(circle at 1174px 540px, rgba(255, 170, 90, 0.28), rgba(255, 170, 90, 0.08) 220px, rgba(5, 8, 25, 0.25) 520px);
+      }
+
+      .shelf-note {
+        position: absolute;
+        width: 14px;
+        height: 18px;
+        pointer-events: none;
+        animation: note-rise 2.4s steps(12) forwards;
+      }
+
+      @keyframes note-rise {
+        to {
+          transform: translate(var(--drift), -64px);
+          opacity: 0;
+        }
+      }
+
+      .shelf-hit {
+        position: absolute;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .twinkle {
+        animation: twinkle 3s steps(2) infinite;
+      }
+
+      @keyframes twinkle {
+        50% { opacity: 0.45; }
+      }
+
+      .disc.flying {
+        z-index: 5;
+        transform-origin: 0 0;
+      }
+
+      .disc.landing {
+        transition: transform 0.5s steps(8);
       }
 
       /* ── Mini screen overrides (≤ 800×480 physical display) ── */
@@ -787,6 +906,22 @@
 
       .nav-btn.retro:active .frame {
         fill: #ff7a2f;
+      }
+
+      .home-btn {
+        display: none;
+      }
+
+      .home-btn.shown {
+        display: block;
+      }
+
+      .nav-btn.beside-home {
+        right: 88px;
+      }
+
+      .mini .nav-btn.beside-home {
+        right: 116px;
       }
     </style>
   </head>
@@ -896,11 +1031,13 @@
             <svg class="icon-repeat-one" viewBox="0 0 12 9" fill="currentColor" shape-rendering="crispEdges"><rect x="2" y="1" width="7" height="1"/><rect x="8" y="0" width="1" height="3"/><rect x="9" y="1" width="1" height="1"/><rect x="10" y="2" width="1" height="3"/><rect x="3" y="6" width="7" height="1"/><rect x="3" y="5" width="1" height="3"/><rect x="2" y="6" width="1" height="1"/><rect x="1" y="2" width="1" height="3"/><rect x="6" y="2" width="1" height="4"/><rect x="5" y="3" width="1" height="1"/></svg>
           </button>
         </div>
+        <div class="shelf" id="shelf"></div>
         <div class="player-msg" id="player-msg"></div>
       </div>
     </div>
 
     <button class="nav-btn" id="nav-btn"></button>
+    <button class="nav-btn retro home-btn" id="home-btn"></button>
 
     <script>
       "use strict";
@@ -1359,6 +1496,10 @@
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
       const USAGE_ICON =
         '<svg viewBox="0 0 16 16" shape-rendering="crispEdges">' + NAV_FRAME + '<g fill="#6f6a62"><rect x="4" y="9" width="2" height="3"/><rect x="7" y="6" width="2" height="6"/><rect x="10" y="3" width="2" height="9"/></g></svg>';
+      const HOME_ICON =
+        '<svg viewBox="0 0 16 16" shape-rendering="crispEdges">' + NAV_FRAME + '<g fill="#6f6a62"><rect x="6" y="4" width="4" height="1"/><rect x="5" y="5" width="6" height="1"/><rect x="4" y="6" width="8" height="1"/><rect x="3" y="7" width="10" height="1"/><rect x="4" y="8" width="8" height="4"/></g><rect x="7" y="9" width="2" height="3" fill="#201e1b"/></svg>';
+      const PLAYER_ICON =
+        '<svg viewBox="0 0 16 16" shape-rendering="crispEdges">' + NAV_FRAME + '<g fill="#6f6a62"><rect x="5" y="4" width="2" height="8"/><rect x="7" y="5" width="2" height="6"/><rect x="9" y="6" width="2" height="4"/><rect x="11" y="7" width="1" height="2"/></g></svg>';
       const PLAY_ICON =
         '<svg viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="10"/><rect x="3" y="1" width="2" height="8"/><rect x="5" y="2" width="2" height="6"/><rect x="7" y="3" width="2" height="4"/><rect x="9" y="4" width="1" height="2"/></svg>';
       const PAUSE_ICON =
@@ -1379,6 +1520,15 @@
         navBtn.innerHTML = playerVisible
           ? USAGE_ICON
           : MUSIC_ICON;
+        renderHome();
+      }
+
+      function renderHome() {
+        const shown = playerVisible && !!player;
+        const homeBtn = document.getElementById("home-btn");
+        homeBtn.classList.toggle("shown", shown);
+        homeBtn.innerHTML = shelfBrowse ? PLAYER_ICON : HOME_ICON;
+        document.getElementById("nav-btn").classList.toggle("beside-home", shown);
       }
 
       function setPlayerVisible(visible) {
@@ -1517,6 +1667,15 @@
         discCtx.putImageData(image, 0, 0);
       }
 
+      function sampleCover(img) {
+        const canvas = document.createElement("canvas");
+        canvas.width = COVER_SIZE;
+        canvas.height = COVER_SIZE;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, COVER_SIZE, COVER_SIZE);
+        return ctx.getImageData(0, 0, COVER_SIZE, COVER_SIZE).data;
+      }
+
       function loadCover(url) {
         if (url === coverUrl) return;
         coverUrl = url;
@@ -1528,12 +1687,7 @@
         img.crossOrigin = "anonymous";
         img.onload = () => {
           if (url !== coverUrl) return;
-          const canvas = document.createElement("canvas");
-          canvas.width = COVER_SIZE;
-          canvas.height = COVER_SIZE;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, COVER_SIZE, COVER_SIZE);
-          coverPixels = ctx.getImageData(0, 0, COVER_SIZE, COVER_SIZE).data;
+          coverPixels = sampleCover(img);
           drawDisc();
         };
         img.src = url;
@@ -1603,6 +1757,7 @@
         const state = document.getElementById("play-state");
         state.classList.toggle("paused", !playing);
         state.innerHTML = !player ? "" : playing ? PLAYING_LABEL : PAUSED_LABEL;
+        shelf.classList.toggle("playing", playing);
       }
 
       function renderSeek() {
@@ -1621,8 +1776,14 @@
       function renderPlayer(data) {
         const screen = document.getElementById("player-screen");
         const hasTrack = data.connected && data.track;
+        if (!hasTrack && Date.now() < shelfHoldUntil) return;
         player = hasTrack ? data : null;
         screen.classList.toggle("idle", !hasTrack);
+        if (!hasTrack) shelfBrowse = false;
+        const showShelf = (data.connected && !data.track) || shelfBrowse;
+        if (showShelf && !screen.classList.contains("shelf-on")) loadRecent();
+        screen.classList.toggle("shelf-on", showShelf);
+        renderHome();
 
         if (!data.connected) {
           document.getElementById("player-track").textContent =
@@ -1761,6 +1922,553 @@
         discFrame = (discFrame + 1) % DISC_FRAMES;
         drawDisc();
       }, 150);
+
+      /* ── Shelf ── */
+      const shelf = document.getElementById("shelf");
+      const SHELF_COVER_SIZE = 28;
+      const shelfSlots = [];
+      let shelfHoldUntil = 0;
+      let shelfBusy = false;
+      let shelfBrowse = false;
+
+      function block(x, y, w, h, color, cls) {
+        const el = document.createElement("div");
+        el.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${color}`;
+        if (cls) el.className = cls;
+        shelf.appendChild(el);
+        return el;
+      }
+
+      function shelfFloor() {
+        block(-400, -400, 1600, 824, "repeating-linear-gradient(90deg, #15151d 0 16px, #191922 16px 24px)");
+        block(-400, 424, 1600, 6, "#1a1411");
+        block(-400, 430, 1600, 450, "#3a291c");
+        for (let y = 444; y < 880; y += 14) block(-400, y, 1600, 2, "#2e2016");
+        [[90, 430], [310, 430], [530, 430], [700, 430], [200, 444], [450, 444], [640, 444], [120, 458], [380, 458], [620, 458]]
+          .forEach(([x, y]) => block(x, y, 2, 14, "#2e2016"));
+      }
+
+      function shelfWindow() {
+        block(240, 14, 320, 256, "#3a2716");
+        block(248, 22, 304, 240, "#0b1026");
+        block(248, 150, 304, 60, "#0e1430");
+        block(248, 210, 304, 52, "#131a38");
+        [[4, 0, 6], [2, 1, 5], [1, 2, 4], [0, 3, 4], [0, 4, 3], [0, 5, 3], [0, 6, 3], [0, 7, 3], [0, 8, 3], [0, 9, 3], [0, 10, 4], [1, 11, 4], [2, 12, 5], [4, 13, 6]]
+          .forEach(([x, y, w]) => block(500 + x, 36 + y, w, 1, "#f2ebd3"));
+        [[262, 34], [286, 70], [318, 40], [346, 112], [372, 54], [420, 30], [436, 120], [464, 70], [530, 104], [540, 160], [270, 150], [384, 150]]
+          .forEach(([x, y], i) => {
+            block(x, y, 2, 2, "#eee7d7", "twinkle").style.animationDelay = `${(i % 5) * 0.6}s`;
+          });
+        let bx = 248;
+        let bi = 0;
+        while (bx < 552) {
+          const w = Math.min(552 - bx, 12 + ((bi * 7) % 4) * 4);
+          const h = 50 + ((bi * 37) % 7) * 12;
+          block(bx, 262 - h, w, h, "#05070f");
+          for (let wy = 262 - h + 6; wy < 256; wy += 8) {
+            for (let wx = bx + 3; wx < bx + w - 3; wx += 6) {
+              if ((wx * 7 + wy * 13 + bi * 5) % 9 < 2) block(wx, wy, 3, 3, "#ffd27a");
+            }
+          }
+          bx += w;
+          bi++;
+        }
+        block(397, 22, 6, 240, "#3a2716");
+        block(248, 96, 304, 6, "#3a2716");
+        block(240, 14, 320, 3, "#5c3f26");
+        block(240, 14, 3, 256, "#5c3f26");
+        block(232, 266, 336, 8, "#5c3f26");
+        block(232, 266, 336, 2, "#8a6240");
+        block(232, 274, 336, 4, "rgba(0,0,0,0.3)");
+      }
+
+      function shelfBooks(x, y) {
+        block(x + 6, y - 20, 26, 20, "#8a4b2e");
+        block(x + 4, y - 24, 30, 5, "#a35c3a");
+        [[10, -38, 8, 14], [18, -46, 8, 22], [26, -36, 8, 12], [2, -30, 8, 8], [32, -32, 8, 8], [2, -4, 4, 10], [0, 6, 4, 12], [2, 18, 6, 6]]
+          .forEach(([dx, dy, w, h]) => block(x + dx, y + dy, w, h, "#4e7a3a"));
+        [[14, -42, 4, 6], [24, -30, 4, 6], [34, -28, 4, 4], [0, 10, 4, 4]]
+          .forEach(([dx, dy, w, h]) => block(x + dx, y + dy, w, h, "#3b5e2c"));
+        let bx = x + 44;
+        [[9, 47, "#3f2a2e", "#c9a57e"], [8, 49, "#2b3340", "#a39c8f"], [10, 36, "#5a4636", "#eee7d7"], [7, 41, "#2f3a2c", "#cfc8ba"], [11, 52, "#6b3a2e", "#e9c9a0"], [9, 50, "#1e1e22", "#ff7a2f"], [8, 38, "#44506a", "#eee7d7"]]
+          .forEach(([w, h, c, band]) => {
+            block(bx, y - h, w, h, c);
+            block(bx, y - h + 6, w, 3, band);
+            bx += w;
+          });
+        block(bx + 2, y - 12, 18, 12, "#3f2a2e");
+        block(bx + 3, y - 20, 16, 8, "#5a4636");
+      }
+
+      function drawGuitar(block, cx, base) {
+        [[0, 2, 14], [2, 2, 20], [4, 2, 24], [6, 3, 28], [9, 3, 31], [12, 4, 33], [16, 12, 34], [28, 8, 33], [36, 6, 30], [42, 10, 24], [52, 4, 25], [56, 12, 27], [68, 10, 26], [78, 6, 23], [84, 3, 18], [87, 1, 12]]
+          .forEach(([dy, h, hw]) => {
+            block(cx - hw, base - dy - h, hw * 2, h, "#d9a362");
+            block(cx - hw, base - dy - h, 3, h, "#8a5a2e");
+          });
+        [[57, 2, 5], [59, 2, 7], [61, 10, 8], [71, 2, 7], [73, 2, 5]].forEach(([dy, h, hw]) => block(cx - hw, base - dy - h, hw * 2, h, "#7a5a3a"));
+        [[-7, 64], [6, 64], [-4, 72], [3, 72], [-4, 58], [3, 58]].forEach(([dx, dy]) => block(cx + dx, base - dy, 1, 1, "#4e7a3a"));
+        [[62, 2, 3], [64, 4, 5], [68, 2, 3]].forEach(([dy, h, hw]) => block(cx - hw, base - dy - h, hw * 2, h, "#1c1a19"));
+        block(cx - 14, base - 28, 28, 6, "#4a321f");
+        block(cx - 12, base - 26, 24, 2, "#c9a57e");
+        block(cx - 5, base - 152, 10, 64, "#2a1c11");
+        for (let dy = 96; dy < 152; dy += 8) block(cx - 5, base - dy, 10, 1, "#6f6a62");
+        block(cx - 8, base - 182, 16, 30, "#3a2716");
+        block(cx - 8, base - 184, 5, 2, "#3a2716");
+        block(cx + 3, base - 184, 5, 2, "#3a2716");
+        block(cx - 5, base - 178, 3, 22, "#120f0c");
+        block(cx + 2, base - 178, 3, 22, "#120f0c");
+        [160, 168, 176].forEach((dy) => {
+          block(cx - 11, base - dy, 3, 3, "#e9e2d2");
+          block(cx + 8, base - dy, 3, 3, "#e9e2d2");
+        });
+        [[-3, "rgba(200,200,205,0.5)"], [-1, "rgba(200,200,205,0.5)"], [1, "rgba(242,236,220,0.5)"], [3, "rgba(242,236,220,0.5)"]]
+          .forEach(([dx, c]) => block(cx + dx, base - 152, 1, 126, c));
+      }
+
+      function shelfGuitar(x, base) {
+        const sprite = document.createElement("canvas");
+        sprite.width = 80;
+        sprite.height = 204;
+        const spriteCtx = sprite.getContext("2d");
+        drawGuitar((bx, by, w, h, c) => {
+          spriteCtx.fillStyle = c;
+          spriteCtx.fillRect(bx, by, w, h);
+        }, 40, 202);
+        const el = document.createElement("canvas");
+        el.width = 160;
+        el.height = 250;
+        el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none`;
+        const ctx = el.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(80, 232);
+        ctx.rotate(Math.asin((57 - x) / (184 * 1.1)));
+        ctx.scale(1.1, 1.1);
+        ctx.drawImage(sprite, -40, -202);
+        shelf.appendChild(el);
+      }
+
+      function shelfLamp(x, base) {
+        block(x + 22, 160, 4, base - 166, "#3a3631");
+        block(x + 10, base - 8, 28, 8, "#2a2723");
+        block(x + 12, 112, 24, 8, "#e9c9a0");
+        block(x + 8, 120, 32, 10, "#e9c9a0");
+        block(x + 4, 130, 40, 12, "#f2d6b0");
+        block(x, 142, 48, 14, "#f7e2c2");
+        block(x, 156, 48, 4, "#c9a57e");
+      }
+
+      const speaker = document.createElement("canvas");
+      const speakerCtx = speaker.getContext("2d");
+      const SPEAKER_BEAT = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0];
+      let speakerStep = 0;
+      let speakerLevel = -1;
+
+      function drawSpeaker(level) {
+        if (level === speakerLevel) return;
+        speakerLevel = level;
+        const fill = (x, y, w, h, c) => {
+          speakerCtx.fillStyle = c;
+          speakerCtx.fillRect(x, y, w, h);
+        };
+        const bx = 2;
+        const by = 4;
+        const bw = 44;
+        const bh = 56;
+        speakerCtx.clearRect(0, 0, speaker.width, speaker.height);
+        fill(bx, by, bw, bh, "#8b4a2b");
+        fill(bx, by, bw, 3, "#b06a3f");
+        fill(bx, by, 3, bh, "#5e2f1a");
+        const disc = (cx, cy, r, c) => {
+          for (let py = -r; py < r; py++) {
+            for (let px = -r; px < r; px++) {
+              if ((px + 0.5) ** 2 + (py + 0.5) ** 2 <= r * r) fill(cx + px, cy + py, 1, 1, c);
+            }
+          }
+        };
+        [[16, 10, 7], [39, 9, 6]].forEach(([cy, outer, inner]) => {
+          const cx = bx + bw / 2;
+          const cyy = by + cy;
+          disc(cx, cyy, outer + level, "#1e1a17");
+          disc(cx, cyy, inner + level, "#3a3631");
+          disc(cx, cyy, 2 + level, "#a39c8f");
+        });
+      }
+
+      setInterval(() => {
+        if (!shelf.classList.contains("playing")) return drawSpeaker(0);
+        drawSpeaker(SPEAKER_BEAT[speakerStep++ % SPEAKER_BEAT.length]);
+      }, 110);
+
+      function shelfTop(x, y) {
+        block(x + 4, y - 8, 104, 8, "rgba(0,0,0,0.3)");
+        block(x, y - 30, 108, 30, "#2a2522");
+        block(x, y - 30, 108, 3, "#4a433d");
+        block(x + 10, y - 36, 72, 6, "#0e0d12");
+        block(x + 38, y - 38, 16, 2, "#ff7a2f");
+        block(x + 90, y - 44, 4, 14, "#cfc8ba");
+        block(x + 76, y - 44, 18, 4, "#cfc8ba");
+        block(x + 4, y - 12, 6, 6, "#ff7a2f");
+        speaker.width = 48;
+        speaker.height = 60;
+        speaker.style.cssText = `left:${x + 116}px;top:${y - 60}px;width:48px;height:60px`;
+        shelf.appendChild(speaker);
+        drawSpeaker(0);
+        const hit = document.createElement("button");
+        hit.className = "shelf-hit";
+        hit.setAttribute("aria-label", "Open player");
+        hit.style.cssText = `left:${x}px;top:${y - 56}px;width:162px;height:56px`;
+        hit.addEventListener("click", () => {
+          if (shelfBrowse && player) closeShelf();
+        });
+        shelf.appendChild(hit);
+      }
+
+      function buildShelf() {
+        shelfFloor();
+        shelfWindow();
+        const rows = [112, 262];
+        const positions = [];
+        rows.forEach((y) => {
+          for (let i = 0; i < 5; i++) positions.push([72 + i * 136, y + 18]);
+        });
+        positions.forEach(([x, y], i) => {
+          const peek = document.createElement("canvas");
+          peek.width = DISC_SIZE;
+          peek.height = DISC_SIZE;
+          peek.className = "shelf-peek";
+          peek.style.cssText = `left:${x + 8}px;top:${y + 8}px;visibility:hidden`;
+          shelf.appendChild(peek);
+
+          const button = document.createElement("button");
+          button.className = "shelf-cover";
+          button.style.cssText = `left:${x}px;top:${y}px;visibility:hidden`;
+          const art = document.createElement("canvas");
+          art.width = SHELF_COVER_SIZE;
+          art.height = SHELF_COVER_SIZE;
+          button.appendChild(art);
+          button.addEventListener("click", () => pickRecord(i));
+          shelf.appendChild(button);
+
+          shelfSlots.push({ x, y, peek, button, art, rec: null, img: null });
+        });
+        [[64, 242, 672], [64, 392, 672], [608, 100, 128], [28, 100, 184]].forEach(([x, y, w]) => {
+          block(x, y + 20, w, 8, "rgba(0,0,0,0.3)");
+          block(x, y, w, 20, "#5c3f26");
+          block(x, y, w, 4, "#8a6240");
+          block(x, y + 16, w, 4, "#3a2716");
+          [x + 24, x + w - 32].forEach((bx) => {
+            block(bx, y + 20, 8, 4, "#2a2723");
+            block(bx, y + 24, 4, 8, "#2a2723");
+          });
+        });
+        shelfTop(39, 100);
+        shelfBooks(608, 100);
+        shelfGuitar(4, 446);
+        shelfLamp(750, 442);
+        cat.className = "shelf-cat";
+        shelf.appendChild(cat);
+        shelf.appendChild(document.createElement("div")).className = "shelf-glow";
+      }
+
+      function fillShelf(tracks) {
+        shelfSlots.forEach((slot, i) => {
+          const rec = tracks[i] ?? null;
+          slot.rec = rec;
+          slot.img = null;
+          slot.button.classList.remove("picked");
+          slot.peek.classList.remove("out");
+          slot.peek.style.visibility = "hidden";
+          slot.button.style.visibility = rec ? "visible" : "hidden";
+          slot.art.getContext("2d").clearRect(0, 0, SHELF_COVER_SIZE, SHELF_COVER_SIZE);
+          if (!rec) return;
+          slot.button.setAttribute("aria-label", `Play ${rec.album}`);
+          if (!rec.image) return;
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            if (slot.rec !== rec) return;
+            slot.img = img;
+            slot.art.getContext("2d").drawImage(img, 0, 0, SHELF_COVER_SIZE, SHELF_COVER_SIZE);
+          };
+          img.src = rec.image;
+        });
+      }
+
+      async function loadRecent() {
+        shelf.classList.remove("leaving");
+        try {
+          const res = await fetch("/spotify/recent");
+          const data = await res.json();
+          if (!res.ok) {
+            showPlayerMsg(data.message || `HTTP ${res.status}`);
+            return;
+          }
+          fillShelf(data);
+        } catch (e) {
+          showPlayerMsg(e.message || "fetch error");
+        }
+      }
+
+      async function pickRecord(i) {
+        const slot = shelfSlots[i];
+        if (shelfBusy || !slot.rec) return;
+        shelfBusy = true;
+        shelfBrowse = false;
+        shelfHoldUntil = Date.now() + 8000;
+        const rec = slot.rec;
+        const request = fetch(`/spotify/album?value=${encodeURIComponent(rec.uri)}`, { method: "POST" });
+
+        coverUrl = rec.image;
+        coverPixels = slot.img ? sampleCover(slot.img) : null;
+        discFrame = 0;
+        drawDisc();
+        slot.peek.getContext("2d").drawImage(discCtx.canvas, 0, 0);
+        slot.peek.style.visibility = "visible";
+        slot.button.classList.add("picked");
+        requestAnimationFrame(() => slot.peek.classList.add("out"));
+        await new Promise((r) => setTimeout(r, 330));
+
+        const disc = discCtx.canvas;
+        const startX = slot.x + 8 + 84 - 29;
+        const startY = slot.y + 14 + 8 - 29;
+        disc.classList.add("flying");
+        disc.style.transform = `translate(${startX}px, ${startY}px) scale(${96 / 280})`;
+        slot.peek.style.visibility = "hidden";
+        renderPlayer({
+          connected: true,
+          is_playing: true,
+          progress_ms: 0,
+          duration_ms: 0,
+          track: rec.album,
+          artist: rec.artist,
+          album: rec.album,
+          image: rec.image,
+          shuffle: false,
+          smart_shuffle: false,
+          repeat: "off",
+        });
+        tonearm.classList.remove("on");
+        document.getElementById("player-screen").classList.add("shelf-on");
+        void disc.offsetWidth;
+        disc.classList.add("landing");
+        disc.style.transform = "";
+        shelf.classList.add("leaving");
+        await new Promise((r) => setTimeout(r, 500));
+
+        disc.classList.remove("flying", "landing");
+        document.getElementById("player-screen").classList.remove("shelf-on");
+        renderPlayState();
+
+        const res = await request.catch((e) => ({ ok: false, json: async () => ({ message: e.message }) }));
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          showPlayerMsg(body.message || `HTTP ${res.status}`);
+          shelfHoldUntil = 0;
+        }
+        shelfBusy = false;
+        setTimeout(fetchPlayer, 600);
+      }
+
+      const CAT_TOP = [
+        "......................k...k.",
+        ".k...................kk..kk.",
+        ".k...................kkkkkk.",
+        "..k.................kkkkkkk.",
+        "..k.................kekkkek.",
+        "..k.................kkknkkk.",
+        "..k.................wkkkkkw.",
+        "...k...............kkkkkk...",
+        "....kkkkkkkkkkkkkkkkkkkk....",
+        "....kkkdkkkdkkkdkkkkkkkw....",
+        "....kkkdkkkdkkkdkkkkkkww....",
+        "....kkkkkkkkkkkkkkkkkkww....",
+        ".....kkkkkkkkkkkkkkkkkw.....",
+      ];
+      const CAT_WALK = [
+        CAT_TOP.concat([
+          ".....kk.kk.........kk.kk....",
+          ".....kk..kk.......kk...kk...",
+          "....kk....kk.....kk.....kk..",
+          "....kk....kk.....kk.....kk..",
+          "...ww.....ww....ww......ww..",
+        ]),
+        CAT_TOP.concat([
+          "......kkkk..........kkkk....",
+          "......kkkk..........kkkk....",
+          "......kk.kk........kk.kk....",
+          "......kk.kk........kk.kk....",
+          "......ww.ww........ww.ww....",
+        ]),
+      ];
+      const CAT_SIT_HEAD = [
+        ".................k...k......",
+        ".................kk.kk......",
+        ".................kkkkk......",
+        "................kkkkkkk.....",
+        "................kekkkek.....",
+        "................kkknkkk.....",
+        ".................wkkkw......",
+      ];
+      const CAT_SIT_BODY = [
+        "..........kkkkkkkkkkww......",
+        ".........kkkkkkkkkkkww......",
+        "........kkkdkkkdkkkkww......",
+        "........kkkdkkkdkkkkww......",
+        ".......kkkkkkkkkkkkkww......",
+        ".......kkkkkkkkkkkkkkk......",
+        ".......kkkkkkkkkk.kk.kk.....",
+        ".......kkkkkkkkkk.kk.kk.....",
+        ".......kkkkkkkkkk.kk.kk.....",
+        "..kkkkkkkkkkkkkkk.kk.kk.....",
+        ".kkkkkwwwwwww.....ww.ww.....",
+      ];
+      const CAT_PAW_BODY = CAT_SIT_BODY.map((row, y) => (y >= 6 ? row.slice(0, 20) + "........" : row));
+
+      function catFrame(body, headDy, extra) {
+        const rows = Array.from({ length: 18 }, () => Array(28).fill("."));
+        const put = (y, x, str) =>
+          [...str].forEach((c, i) => {
+            if (c !== "." && rows[y]) rows[y][x + i] = c;
+          });
+        body.forEach((row, y) => put(y + 7, 0, row));
+        CAT_SIT_HEAD.forEach((row, y) => put(y + headDy, 0, row));
+        extra.forEach(([y, x, str]) => put(y, x, str));
+        return rows.map((row) => row.join(""));
+      }
+
+      const CAT_SIT = catFrame(CAT_SIT_BODY, 0, []);
+      const CAT_LICK = [
+        catFrame(CAT_PAW_BODY, 0, [[5, 23, "ww"], [6, 23, "ww"], [7, 22, "k"], [8, 22, "k"], [9, 22, "k"], [10, 21, "k"]]),
+        catFrame(CAT_PAW_BODY, 1, [[5, 23, "ww"], [6, 23, "ww"], [7, 22, "k"], [8, 22, "k"], [9, 22, "k"], [10, 21, "k"], [6, 22, "n"]]),
+      ];
+      const CAT_COLORS = { k: "#d98a4a", d: "#a8602c", w: "#f2d6b0", e: "#1c1a19", n: "#e7b7c8" };
+      const cat = document.createElement("canvas");
+      cat.width = 28;
+      cat.height = 18;
+      const catCtx = cat.getContext("2d");
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      function drawCat(rows) {
+        catCtx.clearRect(0, 0, cat.width, cat.height);
+        rows.forEach((row, y) =>
+          [...row].forEach((ch, x) => {
+            if (!CAT_COLORS[ch]) return;
+            catCtx.fillStyle = CAT_COLORS[ch];
+            catCtx.fillRect(x, y, 1, 1);
+          }),
+        );
+      }
+
+      function scheduleCat(delay) {
+        setTimeout(walkCat, delay ?? 20000 + Math.random() * 40000);
+      }
+
+      async function catLick() {
+        drawCat(CAT_SIT);
+        await wait(700);
+        for (let i = 0; i < 10; i++) {
+          drawCat(CAT_LICK[i % 2]);
+          await wait(280);
+        }
+        drawCat(CAT_SIT);
+        await wait(800);
+      }
+
+      async function walkCat() {
+        if (!playerVisible || !playerScreen.classList.contains("shelf-on")) return scheduleCat();
+        const dir = Math.random() < 0.5 ? 1 : -1;
+        let x = dir > 0 ? -120 : 860;
+        let stopAt = Math.random() < 0.5 ? 200 + Math.random() * 400 : null;
+        let step = 0;
+        cat.style.transform = dir > 0 ? "" : "scaleX(-1)";
+        cat.style.display = "block";
+        while (x > -121 && x < 861) {
+          if (stopAt !== null && Math.abs(x - stopAt) < 9) {
+            stopAt = null;
+            await catLick();
+          }
+          x += 9 * dir;
+          drawCat(CAT_WALK[step++ % 2]);
+          cat.style.left = `${x}px`;
+          await wait(150);
+        }
+        cat.style.display = "none";
+        scheduleCat();
+      }
+
+      document.getElementById("home-btn").addEventListener("click", async () => {
+        if (shelfBusy) return;
+        const screen = document.getElementById("player-screen");
+        if (!shelfBrowse) {
+          shelfBusy = true;
+          await loadRecent();
+          shelfBrowse = true;
+          renderHome();
+          shelf.classList.add("leaving");
+          screen.classList.add("shelf-on");
+          void shelf.offsetWidth;
+          shelf.classList.add("entering");
+          shelf.classList.remove("leaving");
+          await new Promise((r) => setTimeout(r, 400));
+          shelf.classList.remove("entering");
+          shelfBusy = false;
+          return;
+        }
+        closeShelf();
+      });
+
+      async function closeShelf() {
+        if (shelfBusy) return;
+        shelfBusy = true;
+        shelf.classList.add("leaving");
+        await new Promise((r) => setTimeout(r, 400));
+        shelfBrowse = false;
+        shelfBusy = false;
+        document.getElementById("player-screen").classList.remove("shelf-on");
+        renderHome();
+        fetchPlayer();
+      }
+
+      const NOTES = [
+        [7, '<rect x="0" y="6" width="4" height="3"/><rect x="3" y="0" width="1" height="7"/><rect x="4" y="0" width="2" height="1"/><rect x="5" y="1" width="1" height="2"/>'],
+        [4, '<rect x="0" y="6" width="4" height="3"/><rect x="3" y="0" width="1" height="7"/>'],
+        [4, '<rect x="0" y="6" width="4" height="1"/><rect x="0" y="8" width="4" height="1"/><rect x="0" y="7" width="1" height="1"/><rect x="3" y="0" width="1" height="8"/>'],
+        [7, '<rect x="0" y="6" width="4" height="3"/><rect x="3" y="0" width="1" height="7"/><rect x="4" y="0" width="2" height="1"/><rect x="5" y="1" width="1" height="2"/><rect x="4" y="3" width="2" height="1"/><rect x="5" y="4" width="1" height="1"/>'],
+        [10, '<rect x="0" y="6" width="3" height="3"/><rect x="6" y="6" width="3" height="3"/><rect x="2" y="0" width="1" height="7"/><rect x="8" y="0" width="1" height="7"/><rect x="2" y="0" width="7" height="2"/>'],
+      ];
+
+      let noteBag = [];
+      let lastNote = -1;
+
+      function nextNote() {
+        if (!noteBag.length) {
+          noteBag = NOTES.map((_, i) => i).sort(() => Math.random() - 0.5);
+          if (noteBag[0] === lastNote) noteBag.push(noteBag.shift());
+        }
+        lastNote = noteBag.shift();
+        return NOTES[lastNote];
+      }
+
+      function spawnNote() {
+        const note = document.createElement("div");
+        note.className = "shelf-note";
+        note.style.left = `${161 + Math.round(Math.random() * 24)}px`;
+        note.style.top = "34px";
+        note.style.setProperty("--drift", `${Math.round(Math.random() * 32 - 16)}px`);
+        const [w, rects] = nextNote();
+        note.style.width = `${w * 2}px`;
+        note.innerHTML = `<svg viewBox="0 0 ${w} 9" width="${w * 2}" height="18" fill="#eee7d7" shape-rendering="crispEdges">${rects}</svg>`;
+        note.addEventListener("animationend", () => note.remove());
+        shelf.appendChild(note);
+      }
+
+      setInterval(() => {
+        if (playerVisible && shelf.classList.contains("playing") && playerScreen.classList.contains("shelf-on")) spawnNote();
+      }, 900);
+
+      buildShelf();
+      scheduleCat(8000);
 
       renderNav();
       renderPlayState();

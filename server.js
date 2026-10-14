@@ -199,7 +199,7 @@ async function poll() {
 
 const SPOTIFY_TOKEN_FILE   = path.join(os.homedir(), '.claudemeter', 'spotify.json');
 const SPOTIFY_REDIRECT_URI = `http://127.0.0.1:${PORT}/spotify/callback`;
-const SPOTIFY_SCOPES       = 'user-read-playback-state user-modify-playback-state';
+const SPOTIFY_SCOPES       = 'user-read-playback-state user-modify-playback-state user-read-recently-played';
 
 let spotifyAccess    = null;
 let spotifyAuthState = null;
@@ -238,11 +238,11 @@ async function spotifyToken() {
   return spotifyAccess.token;
 }
 
-async function spotifyApi(method, endpoint) {
+async function spotifyApi(method, endpoint, body) {
   const res = await fetch(`https://api.spotify.com/v1/me/player${endpoint}`, {
     method,
-    headers: { 'Authorization': `Bearer ${await spotifyToken()}` },
-    body: method === 'GET' ? undefined : '',
+    headers: { 'Authorization': `Bearer ${await spotifyToken()}`, ...(body && { 'Content-Type': 'application/json' }) },
+    body: method === 'GET' ? undefined : body ? JSON.stringify(body) : '',
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -317,6 +317,46 @@ app.get('/spotify/state', async (_req, res) => {
     });
   } catch (err) {
     if (err.status === 401 && err.message === 'Spotify not connected') return res.json({ connected: false });
+    res.status(err.status || 500).json({ message: err.message });
+  }
+});
+
+app.get('/spotify/recent', async (_req, res) => {
+  try {
+    const data = await spotifyApi('GET', '/recently-played?limit=50');
+    const seen = new Set();
+    const albums = [];
+    for (const { track } of data?.items ?? []) {
+      const album = track?.album;
+      if (!album || seen.has(album.id)) continue;
+      seen.add(album.id);
+      albums.push({
+        uri: album.uri,
+        artist: (album.artists ?? []).map((a) => a.name).join(', '),
+        album: album.name,
+        image: album.images?.[0]?.url ?? null,
+      });
+      if (albums.length === 10) break;
+    }
+    res.json(albums);
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
+});
+
+app.post('/spotify/album', async (req, res) => {
+  const body = { context_uri: req.query.value };
+  try {
+    try {
+      await spotifyApi('PUT', '/play', body);
+    } catch (err) {
+      if (err.status !== 404) throw err;
+      const { devices } = await spotifyApi('GET', '/devices');
+      if (!devices?.length) throw new SpotifyError('No Spotify device available', 404);
+      await spotifyApi('PUT', `/play?device_id=${encodeURIComponent(devices[0].id)}`, body);
+    }
+    res.json({ ok: true });
+  } catch (err) {
     res.status(err.status || 500).json({ message: err.message });
   }
 });
