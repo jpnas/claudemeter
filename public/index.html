@@ -679,7 +679,8 @@
 
       .ctl.smart .icon-smart {
         display: block;
-        width: 45px;
+        width: 39px;
+        height: 30px;
       }
 
       .ctl.smart .icon-shuffle {
@@ -1017,7 +1018,7 @@
         <div class="controls">
           <button class="ctl toggle" id="shuffle-btn">
             <svg class="icon-shuffle" viewBox="0 0 12 9" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="1" width="3" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="9" y="5" width="1" height="3"/><rect x="10" y="6" width="1" height="1"/><rect x="0" y="6" width="3" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="7" y="1" width="3" height="1"/><rect x="9" y="0" width="1" height="3"/><rect x="10" y="1" width="1" height="1"/></svg>
-            <svg class="icon-smart" viewBox="0 0 15 9" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="1" width="3" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="9" y="5" width="1" height="3"/><rect x="10" y="6" width="1" height="1"/><rect x="0" y="6" width="3" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="7" y="1" width="3" height="1"/><rect x="9" y="0" width="1" height="3"/><rect x="10" y="1" width="1" height="1"/><rect x="13" y="0" width="1" height="3"/><rect x="12" y="1" width="3" height="1"/></svg>
+            <svg class="icon-smart" viewBox="0 0 13 10" fill="currentColor" shape-rendering="crispEdges"><rect x="2" y="0" width="1" height="1"/><rect x="1" y="1" width="3" height="3"/><rect x="0" y="2" width="5" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="7" y="5" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="9" y="7" width="3" height="1"/><rect x="11" y="6" width="1" height="3"/><rect x="12" y="7" width="1" height="1"/><rect x="2" y="7" width="3" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="9" y="2" width="3" height="1"/><rect x="11" y="1" width="1" height="3"/><rect x="12" y="2" width="1" height="1"/></svg>
           </button>
           <button class="ctl" id="prev-btn">
             <svg viewBox="0 0 13 10" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="10"/><rect x="3" y="4" width="2" height="2"/><rect x="5" y="3" width="2" height="4"/><rect x="7" y="2" width="2" height="6"/><rect x="9" y="1" width="2" height="8"/><rect x="11" y="0" width="2" height="10"/></svg>
@@ -1997,51 +1998,73 @@
         block(bx + 3, y - 20, 16, 8, "#5a4636");
       }
 
-      function drawGuitar(block, cx, base) {
-        [[0, 2, 14], [2, 2, 20], [4, 2, 24], [6, 3, 28], [9, 3, 31], [12, 4, 33], [16, 12, 34], [28, 8, 33], [36, 6, 30], [42, 10, 24], [52, 4, 25], [56, 12, 27], [68, 10, 26], [78, 6, 23], [84, 3, 18], [87, 1, 12]]
-          .forEach(([dy, h, hw]) => {
-            block(cx - hw, base - dy - h, hw * 2, h, "#d9a362");
-            block(cx - hw, base - dy - h, 3, h, "#8a5a2e");
-          });
-        [[57, 2, 5], [59, 2, 7], [61, 10, 8], [71, 2, 7], [73, 2, 5]].forEach(([dy, h, hw]) => block(cx - hw, base - dy - h, hw * 2, h, "#7a5a3a"));
-        [[-7, 64], [6, 64], [-4, 72], [3, 72], [-4, 58], [3, 58]].forEach(([dx, dy]) => block(cx + dx, base - dy, 1, 1, "#4e7a3a"));
-        [[62, 2, 3], [64, 4, 5], [68, 2, 3]].forEach(([dy, h, hw]) => block(cx - hw, base - dy - h, hw * 2, h, "#1c1a19"));
-        block(cx - 14, base - 28, 28, 6, "#4a321f");
-        block(cx - 12, base - 26, 24, 2, "#c9a57e");
-        block(cx - 5, base - 152, 10, 64, "#2a1c11");
-        for (let dy = 96; dy < 152; dy += 8) block(cx - 5, base - dy, 10, 1, "#6f6a62");
-        block(cx - 8, base - 182, 16, 30, "#3a2716");
-        block(cx - 8, base - 184, 5, 2, "#3a2716");
-        block(cx + 3, base - 184, 5, 2, "#3a2716");
-        block(cx - 5, base - 178, 3, 22, "#120f0c");
-        block(cx + 2, base - 178, 3, 22, "#120f0c");
+      function drawGuitar(ctx, cx, base) {
+        const rect = (x, y, w, h, c) => {
+          ctx.fillStyle = c;
+          ctx.fillRect(x, y, w, h);
+        };
+        const profile = [[0, 0], [1, 14], [3, 22], [6, 28], [10, 32], [16, 34.5], [26, 35], [34, 33.5], [40, 30], [46, 26], [50, 24.5], [54, 25], [60, 27], [68, 27.5], [74, 26.5], [80, 23], [84, 18], [87, 10], [88, 0]];
+        const points = profile
+          .map(([dy, hw]) => [cx + hw, base - dy])
+          .concat(profile.slice(1, -1).reverse().map(([dy, hw]) => [cx - hw, base - dy]));
+        ctx.beginPath();
+        const mid = (i) => {
+          const [x1, y1] = points[i % points.length];
+          const [x2, y2] = points[(i + 1) % points.length];
+          return [(x1 + x2) / 2, (y1 + y2) / 2];
+        };
+        ctx.moveTo(...mid(0));
+        for (let i = 1; i <= points.length; i++) ctx.quadraticCurveTo(...points[i % points.length], ...mid(i));
+        ctx.closePath();
+        ctx.fillStyle = "#d9a362";
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#8a5a2e";
+        ctx.stroke();
+        ctx.fillStyle = "#7a5a3a";
+        ctx.beginPath();
+        ctx.arc(cx, base - 66, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#1c1a19";
+        ctx.beginPath();
+        ctx.arc(cx, base - 66, 5, 0, Math.PI * 2);
+        ctx.fill();
+        rect(cx - 14, base - 28, 28, 6, "#4a321f");
+        rect(cx - 12, base - 26, 24, 2, "#c9a57e");
+        rect(cx - 5, base - 154, 10, 66, "#2a1c11");
+        for (let dy = 96; dy < 152; dy += 8) rect(cx - 5, base - dy, 10, 1, "#6f6a62");
+        rect(cx - 8, base - 182, 16, 30, "#3a2716");
+        rect(cx - 8, base - 184, 5, 2, "#3a2716");
+        rect(cx + 3, base - 184, 5, 2, "#3a2716");
+        rect(cx - 5, base - 178, 3, 22, "#120f0c");
+        rect(cx + 2, base - 178, 3, 22, "#120f0c");
         [160, 168, 176].forEach((dy) => {
-          block(cx - 11, base - dy, 3, 3, "#e9e2d2");
-          block(cx + 8, base - dy, 3, 3, "#e9e2d2");
+          rect(cx - 11, base - dy, 3, 3, "#e9e2d2");
+          rect(cx + 8, base - dy, 3, 3, "#e9e2d2");
         });
         [[-3, "rgba(200,200,205,0.5)"], [-1, "rgba(200,200,205,0.5)"], [1, "rgba(242,236,220,0.5)"], [3, "rgba(242,236,220,0.5)"]]
-          .forEach(([dx, c]) => block(cx + dx, base - 152, 1, 126, c));
+          .forEach(([dx, c]) => rect(cx + dx, base - 154, 0.6, 128, c));
       }
 
       function shelfGuitar(x, base) {
         const sprite = document.createElement("canvas");
-        sprite.width = 80;
-        sprite.height = 204;
+        sprite.width = 320;
+        sprite.height = 816;
         const spriteCtx = sprite.getContext("2d");
-        drawGuitar((bx, by, w, h, c) => {
-          spriteCtx.fillStyle = c;
-          spriteCtx.fillRect(bx, by, w, h);
-        }, 40, 202);
+        spriteCtx.scale(4, 4);
+        drawGuitar(spriteCtx, 40, 202);
         const el = document.createElement("canvas");
-        el.width = 160;
-        el.height = 250;
-        el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none`;
+        el.width = 480;
+        el.height = 750;
+        el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none;image-rendering:auto`;
         const ctx = el.getContext("2d");
-        ctx.imageSmoothingEnabled = false;
+        ctx.imageSmoothingQuality = "high";
+        ctx.scale(3, 3);
         ctx.translate(80, 232);
         ctx.rotate(Math.asin((57 - x) / (184 * 1.1)));
-        ctx.scale(1.1, 1.1);
-        ctx.drawImage(sprite, -40, -202);
+        ctx.scale(1.1 / 4, 1.1 / 4);
+        ctx.drawImage(sprite, -160, -808);
         shelf.appendChild(el);
       }
 
@@ -2149,7 +2172,7 @@
 
           shelfSlots.push({ x, y, peek, button, art, rec: null, img: null });
         });
-        [[64, 242, 672], [64, 392, 672], [608, 100, 128], [28, 100, 184]].forEach(([x, y, w]) => {
+        [[64, 242, 672], [64, 392, 672], [604, 100, 136], [32, 100, 176]].forEach(([x, y, w]) => {
           block(x, y + 20, w, 8, "rgba(0,0,0,0.3)");
           block(x, y, w, 20, "#5c3f26");
           block(x, y, w, 4, "#8a6240");
