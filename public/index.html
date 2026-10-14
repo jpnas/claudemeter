@@ -393,7 +393,7 @@
         top: 42px;
         transform-origin: 0 0;
         transform: rotate(-32deg);
-        transition: transform 0.9s ease-in-out;
+        transition: transform 0.6s steps(8);
       }
 
       .tonearm.on {
@@ -586,6 +586,45 @@
       .ctl svg {
         width: 52px;
         height: 40px;
+      }
+
+      .ctl.pressed {
+        animation: ctl-press 0.16s steps(2);
+      }
+
+      .ctl.skip-prev {
+        animation: ctl-skip-prev 0.3s steps(2);
+      }
+
+      .ctl.skip-next {
+        animation: ctl-skip-next 0.3s steps(2);
+      }
+
+      @keyframes ctl-press {
+        0% {
+          transform: translateY(4px);
+          filter: brightness(0.6);
+        }
+      }
+
+      @keyframes ctl-skip-prev {
+        0% {
+          transform: translateY(4px);
+          filter: brightness(0.6);
+        }
+        33% {
+          transform: translateX(-8px);
+        }
+      }
+
+      @keyframes ctl-skip-next {
+        0% {
+          transform: translateY(4px);
+          filter: brightness(0.6);
+        }
+        33% {
+          transform: translateX(8px);
+        }
       }
 
       .ctl.play svg {
@@ -1508,11 +1547,58 @@
         tonearm.prepend(block);
       }
 
+      const MORPH_FRAMES = [
+        [0, 10, 10, 10, 6, 4, 6, 6, 6, 0],
+        [0, 10, 10, 10, 2, 2, 8, 8, 8, 0],
+      ].map(
+        (cols) =>
+          '<svg viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges">' +
+          cols
+            .map((h, x) => `<rect x="${x}" y="${(10 - h) / 2}" width="1" height="${h}"/>`)
+            .join("") +
+          "</svg>",
+      );
+      let shownPlaying;
+      let morphTimer;
+
+      function setPlayIcon(playing) {
+        if (playing === shownPlaying) return;
+        const btn = document.getElementById("play-btn");
+        const target = playing ? PAUSE_ICON : PLAY_ICON;
+        clearInterval(morphTimer);
+        if (shownPlaying === undefined) {
+          shownPlaying = playing;
+          btn.innerHTML = target;
+          return;
+        }
+        shownPlaying = playing;
+        const frames = (playing ? MORPH_FRAMES : [...MORPH_FRAMES].reverse()).concat(target);
+        let i = 0;
+        btn.innerHTML = frames[i++];
+        morphTimer = setInterval(() => {
+          btn.innerHTML = frames[i++];
+          if (i === frames.length) clearInterval(morphTimer);
+        }, 60);
+      }
+
+      function pulse(id, cls) {
+        const btn = document.getElementById(id);
+        btn.classList.remove(cls);
+        void btn.offsetWidth;
+        btn.classList.add(cls);
+      }
+
+      ["play-btn", "prev-btn", "next-btn"].forEach((id) =>
+        document
+          .getElementById(id)
+          .addEventListener("animationend", (e) =>
+            e.currentTarget.classList.remove("pressed", "skip-prev", "skip-next"),
+          ),
+      );
+
       function renderPlayState() {
         const playing = !!player?.is_playing;
-        document.getElementById("play-btn").innerHTML = playing
-          ? PAUSE_ICON
-          : PLAY_ICON;
+        setPlayIcon(playing);
         tonearm.classList.toggle("on", playing);
         const state = document.getElementById("play-state");
         state.classList.toggle("paused", !playing);
@@ -1605,6 +1691,7 @@
 
       document.getElementById("play-btn").addEventListener("click", () => {
         if (!player) return;
+        pulse("play-btn", "pressed");
         player.is_playing = !player.is_playing;
         renderPlayState();
         sendCommand(player.is_playing ? "play" : "pause");
@@ -1612,10 +1699,16 @@
 
       document
         .getElementById("prev-btn")
-        .addEventListener("click", () => sendCommand("previous"));
+        .addEventListener("click", () => {
+          pulse("prev-btn", "skip-prev");
+          sendCommand("previous");
+        });
       document
         .getElementById("next-btn")
-        .addEventListener("click", () => sendCommand("next"));
+        .addEventListener("click", () => {
+          pulse("next-btn", "skip-next");
+          sendCommand("next");
+        });
 
       document.getElementById("shuffle-btn").addEventListener("click", () => {
         if (!player) return;
