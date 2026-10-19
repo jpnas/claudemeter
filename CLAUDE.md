@@ -48,6 +48,8 @@ A second screen (`#player-screen` in `index.html`) controls Spotify playback; th
 
 `server.js` loads `.env` (next to `server.js`) with `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`. The one-time login is `http://127.0.0.1:3333/spotify/login` (the Spotify app must have `http://127.0.0.1:3333/spotify/callback` as Redirect URI); the refresh token is stored in `~/.claudemeter/spotify.json`. Playback commands require Spotify Premium. Smart Shuffle is read from the undocumented `smart_shuffle` field and cannot be toggled through the API.
 
+On Windows, `server.js` also starts `scripts/smtc.ps1`, a long-running PowerShell process that reads the Spotify desktop app from the Windows media controls (SMTC) and takes commands, talking JSON lines over stdin/stdout. It exists because the work network's SSL inspection breaks Spotify Connect, so the Web API never sees that PC. `/spotify/state` picks the source: desktop app playing (held for 5 s after it stops) > Web API track > desktop app paused > nothing; commands go to whichever source was served last. Desktop covers come from a `/v1/search` lookup, falling back to the SMTC thumbnail at `/spotify/cover`. When the Web API has no device, shelf shortcuts open the `spotify:` URI in the desktop app; if it doesn't start playing within 10 s, that URI kind (album/track/playlist) is listed in `disabled_shortcuts` and the shelf greys it out until the server restarts.
+
 ## Color thresholds
 
 Bar fill color follows `getColor()` in `index.html`:

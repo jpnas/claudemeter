@@ -801,6 +801,15 @@
         cursor: pointer;
       }
 
+      .shelf .shortcut-off {
+        cursor: default;
+      }
+
+      .shelf-cover.shortcut-off,
+      .shelf-cat.shortcut-off {
+        filter: grayscale(1) brightness(0.6);
+      }
+
       .shelf.day .night-only,
       .shelf:not(.day) .day-only {
         display: none;
@@ -1853,10 +1862,21 @@
             showPlayerMsg(data.message || `HTTP ${res.status}`);
             return;
           }
+          applyShortcuts(data.disabled_shortcuts ?? []);
           renderPlayer(data);
         } catch (e) {
           showPlayerMsg(e.message || "fetch error");
         }
+      }
+
+      // The server turns a kind of shelf shortcut off when the desktop app
+      // opens it without playing (work PC, no Spotify Connect).
+      let disabledShortcuts = [];
+      function applyShortcuts(kinds) {
+        disabledShortcuts = kinds;
+        shelf.querySelectorAll("[data-shortcut]").forEach((el) =>
+          el.classList.toggle("shortcut-off", kinds.includes(el.dataset.shortcut)),
+        );
       }
 
       async function sendCommand(command, value) {
@@ -2127,8 +2147,9 @@
         const hit = document.createElement("button");
         hit.className = "shelf-hit";
         hit.setAttribute("aria-label", "Play Guitar playlist");
+        hit.dataset.shortcut = "playlist";
         hit.style.cssText = `left:${x - 30}px;top:${base - 196}px;width:94px;height:196px`;
-        hit.addEventListener("click", () => playFromShelf("/spotify/guitar"));
+        hit.addEventListener("click", () => playFromShelf("/spotify/guitar", "playlist"));
         shelf.appendChild(hit);
       }
 
@@ -2250,6 +2271,7 @@
 
           const button = document.createElement("button");
           button.className = "shelf-cover";
+          button.dataset.shortcut = "album";
           button.style.cssText = `left:${x}px;top:${y}px;visibility:hidden`;
           const art = document.createElement("canvas");
           art.width = SHELF_COVER_SIZE;
@@ -2275,6 +2297,7 @@
         shelfGuitar(4, 456);
         shelfLamp(744, 452);
         cat.className = "shelf-cat";
+        cat.dataset.shortcut = "track";
         shelf.appendChild(cat);
         shelf.appendChild(document.createElement("div")).className = "shelf-glow";
       }
@@ -2320,7 +2343,7 @@
 
       async function pickRecord(i) {
         const slot = shelfSlots[i];
-        if (shelfBusy || !slot.rec) return;
+        if (shelfBusy || !slot.rec || disabledShortcuts.includes("album")) return;
         shelfBusy = true;
         shelfBrowse = false;
         shelfHoldUntil = Date.now() + 8000;
@@ -2483,7 +2506,7 @@
       cat.width = 22;
       cat.height = 17;
       const catCtx = cat.getContext("2d");
-      cat.addEventListener("click", () => playFromShelf(`/spotify/track?value=${encodeURIComponent("spotify:track:4ls5LcW90peNWMSqneNLDS")}`));
+      cat.addEventListener("click", () => playFromShelf(`/spotify/track?value=${encodeURIComponent("spotify:track:4ls5LcW90peNWMSqneNLDS")}`, "track"));
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
       function drawCat(rows) {
@@ -2555,8 +2578,8 @@
         closeShelf();
       });
 
-      async function playFromShelf(url) {
-        if (shelfBusy) return;
+      async function playFromShelf(url, kind) {
+        if (shelfBusy || disabledShortcuts.includes(kind)) return;
         shelfBusy = true;
         shelfHoldUntil = Date.now() + 8000;
         const res = await fetch(url, { method: "POST" }).catch((e) => ({ ok: false, json: async () => ({ message: e.message }) }));
