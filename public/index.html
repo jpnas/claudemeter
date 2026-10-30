@@ -805,8 +805,7 @@
         cursor: default;
       }
 
-      .shelf-cover.shortcut-off,
-      .shelf-cat.shortcut-off {
+      .shelf-cover.shortcut-off {
         filter: grayscale(1) brightness(0.6);
       }
 
@@ -2067,7 +2066,7 @@
         shelf.appendChild(hit);
       }
 
-      function drawGuitar(ctx, cx, base) {
+      function drawGuitar(ctx, cx, base, vib = []) {
         const rect = (x, y, w, h, c) => {
           ctx.fillStyle = c;
           ctx.fillRect(x, y, w, h);
@@ -2112,8 +2111,114 @@
           rect(cx - 11, base - dy, 3, 3, "#e9e2d2");
           rect(cx + 8, base - dy, 3, 3, "#e9e2d2");
         });
-        [[-3, "rgba(200,200,205,0.5)"], [-1, "rgba(200,200,205,0.5)"], [1, "rgba(242,236,220,0.5)"], [3, "rgba(242,236,220,0.5)"]]
-          .forEach(([dx, c]) => rect(cx + dx, base - 154, 0.6, 128, c));
+        [3, 1.8, 0.6, -0.6, -1.8, -3].forEach((dx, i) => {
+          ctx.strokeStyle = i < 3 ? "rgba(242,236,220,0.5)" : "rgba(200,200,205,0.5)";
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(cx + dx, base - 154);
+          ctx.quadraticCurveTo(cx + dx + (vib[i] ?? 0), base - 90, cx + dx, base - 26);
+          ctx.stroke();
+        });
+      }
+
+      let shelfAudio = null;
+
+      function audioContext() {
+        shelfAudio ??= new AudioContext();
+        shelfAudio.resume();
+        return shelfAudio;
+      }
+
+      const FEARLESS_TUNING = [246.94, 246.94, 196.0, 146.83, 98.0, 98.0];
+      const FEARLESS_INTRO = [
+        ...FEARLESS_TUNING.map((_, string) => [0, string, 0, 1]),
+        [8, 2, 0, 0.4],
+        [10, 2, 0, 0.4],
+        [14, 1, 1, 0.6],
+        [15, 1, 0, 0.6],
+        [16, 2, 2, 0.6],
+        [17, 2, 0, 0.6],
+        [23, 3, 0, 0.6],
+        [23.5, 3, 2, 0.6, true],
+        [25, 3, 0, 0.6],
+      ];
+      const SIXTEENTH = 60 / 72 / 4;
+      const STRUM_GAP = 0.035;
+      let strumming = false;
+
+      function riffNotes() {
+        const notes = FEARLESS_INTRO
+          .map(([step, string, fret, velocity, hammer]) => ({
+            string,
+            velocity,
+            hammer,
+            at: step * SIXTEENTH + (step ? 0 : string * STRUM_GAP),
+            freq: FEARLESS_TUNING[string] * 2 ** (fret / 12),
+          }))
+          .sort((a, b) => a.string - b.string || a.at - b.at);
+        notes.forEach((note, i) => {
+          const next = notes[i + 1];
+          note.end = next?.string === note.string ? next.at : note.at + 4;
+        });
+        return notes.filter((note, i) => {
+          if (!note.hammer) return true;
+          const prev = notes[i - 1];
+          prev.end = note.end;
+          prev.hammerAt = note.at;
+          prev.hammerRate = note.freq / prev.freq;
+          return false;
+        });
+      }
+
+      function pluckBuffer(audio, freq) {
+        const data = new Float32Array(audio.sampleRate * 4);
+        const period = Math.round(audio.sampleRate / freq);
+        for (let i = 0; i < period; i++) data[i] = Math.random() * 2 - 1;
+        for (let i = 1; i < period; i++) data[i] = (data[i] + data[i - 1]) / 2;
+        for (let i = period; i < data.length; i++) data[i] = 0.498 * (data[i - period] + data[i - period + 1]);
+        const buffer = audio.createBuffer(1, data.length, audio.sampleRate);
+        buffer.copyToChannel(data, 0);
+        return buffer;
+      }
+
+      function strumGuitar(render) {
+        if (strumming) return;
+        strumming = true;
+        const audio = audioContext();
+        const start = audio.currentTime + 0.05;
+        const notes = riffNotes();
+        const buffers = new Map();
+        notes.forEach(({ at, end, freq, velocity, hammerAt, hammerRate }) => {
+          if (!buffers.has(freq)) buffers.set(freq, pluckBuffer(audio, freq));
+          const fade = Math.min(1, (end - at) / 4);
+          const source = audio.createBufferSource();
+          source.buffer = buffers.get(freq);
+          if (hammerAt) source.playbackRate.setValueAtTime(hammerRate, start + hammerAt);
+          const gain = audio.createGain();
+          gain.gain.setValueAtTime(0.18 * velocity, start + at);
+          gain.gain.setValueAtTime(0.18 * velocity, start + end - fade);
+          gain.gain.linearRampToValueAtTime(0, start + end);
+          source.connect(gain).connect(audio.destination);
+          source.start(start + at);
+          source.stop(start + end);
+        });
+        let frame = 0;
+        const end = start + Math.max(...notes.map((n) => n.at)) + 1.5;
+        const tick = () => {
+          const now = audio.currentTime;
+          if (now >= end) {
+            render();
+            strumming = false;
+            return;
+          }
+          const side = frame++ % 2 ? 1 : -1;
+          render(FEARLESS_TUNING.map((_, i) => {
+            const t = Math.min(...notes.filter((n) => n.string === i).map((n) => now - start - n.at).filter((t) => t >= 0));
+            return 2 * side * Math.exp(-t * 2.5);
+          }));
+          requestAnimationFrame(tick);
+        };
+        tick();
       }
 
       function shelfGuitar(x, base) {
@@ -2121,35 +2226,40 @@
         sprite.width = 320;
         sprite.height = 816;
         const spriteCtx = sprite.getContext("2d");
-        spriteCtx.scale(4, 4);
-        drawGuitar(spriteCtx, 40, 202);
         const hi = document.createElement("canvas");
         hi.width = 640;
         hi.height = 1000;
         const hiCtx = hi.getContext("2d");
         hiCtx.imageSmoothingQuality = "high";
-        hiCtx.scale(4, 4);
-        hiCtx.translate(80, 232);
-        hiCtx.rotate(Math.asin((57 - x) / (184 * 1.1)));
-        hiCtx.scale(1.1 / 4, 1.1 / 4);
-        hiCtx.drawImage(sprite, -160, -808);
         const el = document.createElement("canvas");
         el.width = 80;
         el.height = 125;
         el.style.cssText = `left:${x - 80}px;top:${base - 232}px;width:160px;height:250px;pointer-events:none`;
         const ctx = el.getContext("2d");
         ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(hi, 0, 0, 80, 125);
-        const pixels = ctx.getImageData(0, 0, 80, 125);
-        for (let i = 3; i < pixels.data.length; i += 4) pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
-        ctx.putImageData(pixels, 0, 0);
+        const render = (vib) => {
+          spriteCtx.setTransform(4, 0, 0, 4, 0, 0);
+          spriteCtx.clearRect(0, 0, 80, 204);
+          drawGuitar(spriteCtx, 40, 202, vib);
+          hiCtx.setTransform(4, 0, 0, 4, 0, 0);
+          hiCtx.clearRect(0, 0, 160, 250);
+          hiCtx.translate(80, 232);
+          hiCtx.rotate(Math.asin((57 - x) / (184 * 1.1)));
+          hiCtx.scale(1.1 / 4, 1.1 / 4);
+          hiCtx.drawImage(sprite, -160, -808);
+          ctx.clearRect(0, 0, 80, 125);
+          ctx.drawImage(hi, 0, 0, 80, 125);
+          const pixels = ctx.getImageData(0, 0, 80, 125);
+          for (let i = 3; i < pixels.data.length; i += 4) pixels.data[i] = pixels.data[i] >= 128 ? 255 : 0;
+          ctx.putImageData(pixels, 0, 0);
+        };
+        render();
         shelf.appendChild(el);
         const hit = document.createElement("button");
         hit.className = "shelf-hit";
-        hit.setAttribute("aria-label", "Play Guitar playlist");
-        hit.dataset.shortcut = "playlist";
+        hit.setAttribute("aria-label", "Strum guitar");
         hit.style.cssText = `left:${x - 30}px;top:${base - 196}px;width:94px;height:196px`;
-        hit.addEventListener("click", () => playFromShelf("/spotify/guitar", "playlist"));
+        hit.addEventListener("click", () => strumGuitar(render));
         shelf.appendChild(hit);
       }
 
@@ -2297,7 +2407,6 @@
         shelfGuitar(4, 456);
         shelfLamp(744, 452);
         cat.className = "shelf-cat";
-        cat.dataset.shortcut = "track";
         shelf.appendChild(cat);
         shelf.appendChild(document.createElement("div")).className = "shelf-glow";
       }
@@ -2506,7 +2615,15 @@
       cat.width = 22;
       cat.height = 17;
       const catCtx = cat.getContext("2d");
-      cat.addEventListener("click", () => playFromShelf(`/spotify/track?value=${encodeURIComponent("spotify:track:4ls5LcW90peNWMSqneNLDS")}`, "track"));
+      cat.addEventListener("click", meow);
+
+      const meowSound = new Audio("meow.mp3");
+      meowSound.volume = 0.3;
+
+      function meow() {
+        meowSound.currentTime = 0;
+        meowSound.play().catch(() => {});
+      }
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
       function drawCat(rows) {

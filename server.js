@@ -541,37 +541,13 @@ async function playOnWeb(body) {
 }
 
 async function play(body) {
-  try {
-    await playOnWeb(body);
-  } catch (err) {
-    if (![401, 404].includes(err.status) || !smtc.proc) throw err;
-    await openInDesktop(body.context_uri ?? body.uris?.[0]);
-  }
+  if (smtc.proc) return openInDesktop(body.context_uri ?? body.uris?.[0]);
+  await playOnWeb(body);
 }
 
 app.post('/spotify/album', async (req, res) => {
   try {
     await play({ context_uri: req.query.value });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(err.status || 500).json({ message: err.message });
-  }
-});
-
-app.post('/spotify/track', async (req, res) => {
-  try {
-    await play({ uris: [req.query.value] });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(err.status || 500).json({ message: err.message });
-  }
-});
-
-app.post('/spotify/guitar', async (_req, res) => {
-  const id = process.env.SPOTIFY_GUITAR_PLAYLIST?.match(/playlist[/:]([A-Za-z0-9]+)/)?.[1];
-  if (!id) return res.status(500).json({ message: 'SPOTIFY_GUITAR_PLAYLIST must be set in .env' });
-  try {
-    await play({ context_uri: `spotify:playlist:${id}` });
     res.json({ ok: true });
   } catch (err) {
     res.status(err.status || 500).json({ message: err.message });
